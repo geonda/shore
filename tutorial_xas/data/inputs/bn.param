@@ -1,0 +1,23 @@
+
+dft{ qe }
+nkpt {12 12 12 }
+screen.nkpt{ 2 2 2 }
+ngkpt{ 8 8 8 }
+fband{ 3.5 }
+occopt{ 1 }
+nbands{ 20 }
+screen.nbands{ 80 }
+toldfe{ 1.1d-8 }
+tolwfr{ 1.1d-16 }
+nstep{ 50} 
+diemac{ 4.5 }
+screen.shells{ 2.0 3.0 4.0 5.0 }
+cnbse.rad{ 5.0 }
+scfac{ 0.85 }
+cnbse.broaden{ 0.19 }
+dft.ecut{ -1 }
+psp.pp_database{ ONCVPSP-PBE-PDv0.4-stringent }
+psp.ecut_quality{ high }
+opf.program{ hamann }
+para_prefix{ mpirun -n 4 -np 4 }
+

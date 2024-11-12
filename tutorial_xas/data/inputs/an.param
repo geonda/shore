@@ -1,0 +1,25 @@
+nkpt { 4 4 4}
+screen.nkpt{ 2 2 2 }
+ngkpt{ 4 4 4 }
+obkpt{ 2 2 2 }
+dft{ qe }
+ecut{ 82.494 }
+toldfe{ 1.1d-8 }
+tolwfr{ 1.1d-16 }
+nstep{ 50 }
+diemac{ 2.94 }
+CNBSE.xmesh { 10 10 10 }
+screen.shells{ 4.0 }
+cnbse.rad{ 4.0 }
+scfac{ 0.85 }
+cnbse.broaden{ 0.544 }
+calc { xes }
+core_offset{ .true. }
+occopt { 1 }
+nbands{ 200 }
+screen.nbands{ 1200 }
+dft.ecut{ -1 }
+psp.pp_database{ ONCVPSP-PBE-PDv0.4-stringent }
+psp.ecut_quality{ high }
+opf.program{ hamann }
+para_prefix{ mpirun -n 4 -np 4 }

@@ -1,0 +1,15 @@
+dft{ qe }
+nbands{ 25 }
+nkpt { 10 10 10 }
+screen.nkpt{ 2 2 2 }
+screen.nbands{ 100 }
+cnbse.xmesh{ 8 8 8 }
+diemac{ 1.92 }
+screen.shells{ 4.0 }
+cnbse.rad{ 4.0 }
+cnbse.broaden{ 0.5 }
+screen.grid.rmode{ uniform }
+screen.grid.ang{ 5 } 
+ngkpt { 3 3 3 }
+scfac{ 1.0 }
+computer.para_prefix{ mpirun -np 4}
