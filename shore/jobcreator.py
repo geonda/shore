@@ -20,8 +20,8 @@ class JobScriptCreator:
             f"#SBATCH --nodes={self.nodes}",
             f"#SBATCH --time={self.time_limit}",
             "export OMP_NUM_THREADS=1",
-            
-            'source ~/miniforge3/bin/activate new',
+            'source /etc/profile.d/modules.sh',
+            'module load devtools/mpi/openmpi/4.1.5/gcc/11.3',
             f"{command}\n"  # Command to execute the program
         ]
 

@@ -20,7 +20,7 @@ from shore.remote import RemoteServerManager
 import pickle
 import spglib
 
-import mercury as mr
+from IPython.display import JSON
 
 # Shore-related imports
 # from shore.input_manager import input_processing
@@ -99,7 +99,7 @@ class Calculation():
             for id,_ in enumerate(self.input.light.photons):
                 self.server.connect()
                 self.server.upload_file(f"{self.local_dir}/photon{id+1}", self.remote_dir)
-            jc.JobScriptCreator(ncores=self.server.cores).generate_script(path=self.local_dir, command='/home/a.geondzhian/bin/ocean.pl ocean.in > log')
+            jc.JobScriptCreator(ncores=self.server.cores).generate_script(path=self.local_dir, command=self.server.command)
             self.server.connect()
             self.server.upload_file(f"{self.local_dir}/job.sh", self.remote_dir)
      
@@ -184,6 +184,7 @@ class Calculation():
         self.input.content.write_to_file(f"{self.local_dir}/ocean.in")
         
         if self.server:
+            self.server.connect()
             self.server.upload_file(f"{self.local_dir}/ocean.in", self.remote_dir)
             
     def _check_if_there_is_something(self):

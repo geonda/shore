@@ -6,8 +6,8 @@ with open('requirements.txt') as f:
 
     
 setup(
-    name='shore',  # Replace with your package name
-    version='0.1.0',          # Initial version
+    name='shore-pkg-geonda',  # Replace with your package name
+    version='0.1.4',          # Initial version
     packages=find_packages(),  # Automatically find packages in the directory
     install_requires=required,
     author='Andrey Geondzhian',       # Your name

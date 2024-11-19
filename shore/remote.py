@@ -7,14 +7,20 @@ import pickle
 from pathlib import Path
 
 class RemoteServerManager:
-    def __init__(self, remote_host=None, username=None, password=None, load=None):
+    def __init__(self, remote_host=None, username=None,key=None, password=None, load=None, command='/opt/cms/q-ch/ocean/ocean.pl ocean.in > log'):
         if not load:
             self.remote_host = remote_host
             self.username = username
             self.password = password
-            self.root=f'/home/{username}/'
+            if not key:
+                self.file_name=f'/home/{username}/.ssh/id_rsa'
+            else:
+                self.file_name=key
+            # self.root=f'/home/{username}/ocean_work_dir/'
+            self.root=self._init_directory_if_not_exists('/ocean_work_dir')
             self.sbatch=True
             self.monitor_active=False
+            self.command=command
         else:
             self.load(load)
 
@@ -65,6 +71,28 @@ class RemoteServerManager:
     def remote_dir_init(self,rpath):
         self.create_remote_directory_if_not_exists(f"{rpath}")
         self.remote_dir=f"{self.root}/{rpath}"
+    
+    def _init_directory_if_not_exists(self,remote_path):
+        """Recursively create a directory on remote server if not exists."""
+        # Split the path into parts
+        self.connect()
+        parts = remote_path.split('/')
+        
+        path_to_create = f"/home/{self.username}/"
+        for part in parts:
+            if part:  # Ignore empty parts (in case of leading slash)
+                path_to_create = os.path.join(path_to_create, part)
+                try:
+                    remote_dir_check = self.ssh_client.exec_command(f"if [ ! -d '{path_to_create}' ]; then echo 'not_exists'; fi")[1].read().strip().decode()
+                    if remote_dir_check == 'not_exists':
+                        self.ssh_client.exec_command(f"mkdir '{path_to_create}'")
+                        logging.info(f"Created directory: {path_to_create}")
+                    else:
+                        logging.info(f"Directory already exists: {path_to_create}")
+                except Exception as e:
+                    logging.error(f"Failed to create directory '{path_to_create}': {e}")
+        # self.disconnect()
+        return f"/home/{self.username}/{remote_path}"
         
     
     def create_remote_directory_if_not_exists(self,remote_path):
@@ -193,8 +221,10 @@ class RemoteServerManager:
         """Establish an SSH connection to the remote server."""
         self.ssh_client = paramiko.SSHClient()
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+      
         try:
-            self.ssh_client.connect(self.remote_host, username=self.username, password=self.password)
+            private_key = paramiko.RSAKey.from_private_key_file(self.file_name)
+            self.ssh_client.connect(self.remote_host, username=self.username, password=self.password, pkey=private_key)
             self.sftp_client = self.ssh_client.open_sftp()
             logging.info(f"Connected to {self.remote_host}")
         except Exception as e:

@@ -10,7 +10,7 @@ from ase.units import Bohr
 
 import spglib
 
-import mercury as mr
+from IPython.display import JSON as js
 
 # Shore-related imports
 
@@ -432,7 +432,6 @@ class Matter:
        
         """
         self.structure=structure
-        print(kwargs)
         if 'load' in kwargs.keys():
             self.params=self.read_from_file(kwargs['load'])
             del kwargs['load']
@@ -455,7 +454,7 @@ class Matter:
 
         
     def show(self):
-        mr.JSON(self.params, level=1)
+        return js(self.params)
 
     def read_from_file(self, file_path):
         tmp = {}
@@ -749,7 +748,7 @@ class ocean_input():
             print(e)
         
     def show(self):
-        mr.JSON(self.input, level=1)
+        return js(self.input)
 
     def _flatten_dict(self,d):
         items = {}

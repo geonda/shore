@@ -20,8 +20,6 @@ from shore.remote import RemoteServerManager
 import pickle
 import spglib
 
-import mercury as mr
-
 # Shore-related imports
 # from shore.input_manager import input_processing
 import shore.jobcreator as jc
