@@ -399,3 +399,22 @@ class RemoteServerManager:
             info_str += f"  - {method}\n"
         
         print(info_str)
+
+    def check_file_exists(self, remote_file_path):
+        """Check if a file exists on the remote server.
+        
+        Args:
+            remote_file_path (str): The full path to the file on the remote server
+            
+        Returns:
+            bool: True if the file exists, False otherwise
+        """
+        try:
+            self.connect()
+            command = f'test -f {remote_file_path} && echo "exists"'
+            stdin, stdout, stderr = self.ssh_client.exec_command(command)
+            result = stdout.read().decode().strip()
+            return result == "exists"
+        except Exception as e:
+            logging.error(f"Error checking if file exists: {e}")
+            return False
