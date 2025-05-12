@@ -1,0 +1,6 @@
+&PSEUDO
+    Element: Si
+    Type: NC
+    Note: This is a placeholder pseudopotential file for testing purposes.
+    Please replace with actual UPF file for production use.
+&END 

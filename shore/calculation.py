@@ -41,93 +41,117 @@ import threading
 class Calculation():
     def __init__(self, server=None, workflow=None, input=None):
         if workflow:
-            self.workflow=workflow.workflow
+            self.workflow = workflow.workflow
             if workflow.server:
-                self.server=workflow.server
-                self.root=workflow.root
+                self.server = workflow.server
+                self.root = workflow.root
         elif server:
-            self.server=server
-            self.workflow=gworkflow()
-            self.root=os.getcwd()
+            self.server = server
+            self.workflow = gworkflow()
+            self.root = os.getcwd()
         else:
-            self.server=None
-            self.workflow=gworkflow()
-            self.root=os.getcwd()
-        self.fresh=True
+            self.server = None
+            self.workflow = gworkflow()
+            self.root = os.getcwd()
+        self.fresh = True
         os.chdir(self.root)
 
+        self.structure = input.structure
+        self.name = input.name
+        self.input = input
+        self.local_dir = f'{self.root}/{self.structure.name}/{self.name}'
+        self.log_dir = f'{self.root}/{self.structure.name}/{self.name}/logs'
+        self.res_dir = f'{self.local_dir}/results/'
+        self.path_to_jar = os.path.join(self.root, 'jar')
+        self.filename = f'{self.log_dir}/log_{input.name}_state'
+        self.input_data = input.content.input
+        self.job_id = None
+        self.res = None
 
-        
-        self.structure=input.structure
-        self.name=input.name
-        self.element = input.content.element
-
-        self.rpath=f'{self.structure.name}/{self.name}'
-        self.edge = input.content.edge
-        self.workflow = self.workflow
-        self.input=input
-        self.local_dir=f'{self.root}/{self.structure.name}/{self.name}'
-        self.log_dir=f'{self.root}/{self.structure.name}/{self.name}/logs'
-        self.res_dir=f'{self.local_dir}/results/'
-        self.path_to_jar=os.path.join(self.root,'jar')
-        self.filename=f'{self.log_dir}/log_{input.name}_state'
-        self.input_data=input.content.input
-        self.job_id=None
-        self.res=None
-
-
-
-        self.workflow.add_node(str(self.structure.name), layer='structure', state='active')
-        self.workflow.add_instance(node1=self.structure.name, node2=self.name, layer='input', )
-        self.workflow.graph.nodes(data=True)
-
-        self.list_ids=self._get_element_order(self.element)
-
-        Path(self.local_dir).mkdir(parents=True, exist_ok=True)
-        Path(self.log_dir).mkdir(parents=True, exist_ok=True)
-        Path(self.res_dir).mkdir(parents=True, exist_ok=True)
-
-        # create ocean.in
-        self.input.content.write_to_file(f'{self.local_dir}/ocean.in')
-        self.input.light.write_to_folder(file_path=f'{self.local_dir}')
-        
-        if self.server:
-            self.remote_dir=f'{self.server.root}/{self.rpath}'
-            self.server.connect()
-            self.server.remote_dir_init(f"{self.rpath}")
-            self.server.upload_file(f"{self.local_dir}/ocean.in", self.remote_dir)
-            for id,_ in enumerate(self.input.light.photons):
+        # Handle QE vs Ocean input differently
+        if input.target == 'qe':
+            self.element = None
+            self.edge = None
+            self.rpath = f'{self.structure.name}/{self.name}'
+            self.stages = dict(
+                relax=['Starting relaxation', 'Relaxation complete']
+            )
+            self.stages_states = dict(relax=0)
+            
+            # Create directories
+            Path(self.local_dir).mkdir(parents=True, exist_ok=True)
+            Path(self.log_dir).mkdir(parents=True, exist_ok=True)
+            Path(self.res_dir).mkdir(parents=True, exist_ok=True)
+            
+            # Setup workflow nodes
+            self.workflow.add_node(str(self.structure.name), layer='structure', state='active')
+            self.workflow.add_instance(node1=self.structure.name, node2=self.name, layer='input')
+            self.workflow.add_instance(node1=self.name, node2=f'{self.name}-relax', layer='relax')
+            
+            if self.server:
+                self.remote_dir = f'{self.server.root}/{self.rpath}'
                 self.server.connect()
-                self.server.upload_file(f"{self.local_dir}/photon{id+1}", self.remote_dir)
-            jc.JobScriptCreator(ncores=self.server.cores).generate_script(path=self.local_dir, command=self.server.command)
-            self.server.connect()
-            self.server.upload_file(f"{self.local_dir}/job.sh", self.remote_dir)
-     
+                self.server.remote_dir_init(f"{self.rpath}")
+        else:
+            # Original Ocean initialization
+            self.element = input.content.element
+            self.edge = input.content.edge
+            self.rpath = f'{self.structure.name}/{self.name}'
+            
+            self.workflow.add_node(str(self.structure.name), layer='structure', state='active')
+            self.workflow.add_instance(node1=self.structure.name, node2=self.name, layer='input')
+            self.workflow.graph.nodes(data=True)
 
-        self.stages=dict(
-                        parsing=['Storing parsed data','Finished running extractPsp','Done with parsing'],
-                        atomic=['Entering OPF stage','Entering DFT stage'],
-                        dft=['Entering DFT stage','DFT for BSE final states complete','DFT section is complete'],
-                        prep=['Entering PREP stage','Entering SCREENing stage'], 
-                        screen=['Entering SCREENing stage','Time offset:'],
-                        bse=['CNBSE stage','Ocean is done']
-                        )
-        
-        self.stages_states=dict(parsing=0, opf=0, dft=0, prep=0, screen=0, cnbse=0)
-        self.workflow.graph.nodes[f'{self.name}']['state']='active'
-        self.workflow.add_instance(node1=f'{self.name}',node2=f'{self.name}-parsing', layer='parsing', )
-        self.workflow.add_instance(node1=f'{self.name}-parsing',node2=f'{self.name}-atomic', layer='atomic', )
-        self.workflow.add_instance(node1=f'{self.name}-atomic',node2=f'{self.name}-dft', layer='dft', )   
-        self.workflow.add_instance(node1=f'{self.name}-dft',node2=f'{self.name}-prep', layer='prep', )   
-        self.workflow.add_instance(node1=f'{self.name}-prep',node2=f'{self.name}-screen', layer='screen', )   
-        self.workflow.add_instance(node1=f'{self.name}-screen',node2=f'{self.name}-bse', layer='bse', ) 
-        self.workflow.add_instance(node1=f'{self.name}-bse', 
-                                         node2=f'{self.name}-results', layer='results')
-        for atom_sites in self.list_ids:
-            self.workflow.add_instance(node1=f'{self.name}-results',
-                                            node2=f'{self.name}-{self.edge}-{self.element}-{atom_sites}',
-                                            layer='xas results',)
-        
+            self.list_ids = self._get_element_order(self.element)
+
+            Path(self.local_dir).mkdir(parents=True, exist_ok=True)
+            Path(self.log_dir).mkdir(parents=True, exist_ok=True)
+            Path(self.res_dir).mkdir(parents=True, exist_ok=True)
+
+            # create ocean.in
+            self.input.content.write_to_file(f'{self.local_dir}/ocean.in')
+            self.input.light.write_to_folder(file_path=f'{self.local_dir}')
+            
+            if self.server:
+                self.remote_dir = f'{self.server.root}/{self.rpath}'
+                self.server.connect()
+                self.server.remote_dir_init(f"{self.rpath}")
+                self.server.upload_file(f"{self.local_dir}/ocean.in", self.remote_dir)
+                for id,_ in enumerate(self.input.light.photons):
+                    self.server.connect()
+                    self.server.upload_file(f"{self.local_dir}/photon{id+1}", self.remote_dir)
+                jc.JobScriptCreator(ncores=self.server.cores).generate_script(path=self.local_dir, command=self.server.command)
+                self.server.connect()
+                self.server.upload_file(f"{self.local_dir}/job.sh", self.remote_dir)
+
+            self.stages = dict(
+                relax=['Starting relaxation', 'Relaxation complete'],
+                parsing=['Storing parsed data', 'Finished running extractPsp', 'Done with parsing'],
+                atomic=['Entering OPF stage', 'Entering DFT stage'],
+                dft=['Entering DFT stage', 'DFT for BSE final states complete', 'DFT section is complete'],
+                prep=['Entering PREP stage', 'Entering SCREENing stage'],
+                screen=['Entering SCREENing stage', 'Time offset:'],
+                bse=['CNBSE stage', 'Ocean is done']
+            )
+            
+            self.stages_states = dict(relax=0, parsing=0, opf=0, dft=0, prep=0, screen=0, cnbse=0)
+            self.workflow.graph.nodes[f'{self.name}']['state'] = 'active'
+            self.workflow.add_instance(node1=f'{self.name}', node2=f'{self.name}-relax', layer='relax')
+            self.workflow.add_instance(node1=f'{self.name}-relax', node2=f'{self.name}-parsing', layer='parsing')
+            self.workflow.add_instance(node1=f'{self.name}-parsing', node2=f'{self.name}-atomic', layer='atomic')
+            self.workflow.add_instance(node1=f'{self.name}-atomic', node2=f'{self.name}-dft', layer='dft')
+            self.workflow.add_instance(node1=f'{self.name}-dft', node2=f'{self.name}-prep', layer='prep')
+            self.workflow.add_instance(node1=f'{self.name}-prep', node2=f'{self.name}-screen', layer='screen')
+            self.workflow.add_instance(node1=f'{self.name}-screen', node2=f'{self.name}-bse', layer='bse')
+            self.workflow.add_instance(node1=f'{self.name}-bse', node2=f'{self.name}-results', layer='results')
+            
+            for atom_sites in self.list_ids:
+                self.workflow.add_instance(
+                    node1=f'{self.name}-results',
+                    node2=f'{self.name}-{self.edge}-{self.element}-{atom_sites}',
+                    layer='xas results'
+                )
+
         self._check_if_there_is_something()
         if not self.fresh:
             self.load_attributes()
@@ -315,7 +339,8 @@ class Calculation():
             return False  # Folder does not exist
         
 
-    def run(self, overwrite=False,monitor=False):
+    def run(self, overwrite=False, monitor=False):
+        """Run the calculation with the new workflow organization."""
         if self.server:
             self.save_attributes()
             self._run_remote(overwrite=overwrite, monitor=monitor)
@@ -325,80 +350,143 @@ class Calculation():
 
     
     def _run_local(self, overwrite=False, monitor=True):
-        """Execute a bash command in the directory under path."""
-
-        if self.path is None:
-            raise ValueError("Path is not set. Please provide a valid path.")
-        
-        # Change the current working directory to the specified path
+        """Execute the calculation locally with the new workflow."""
         try:
-            os.chdir(self.path)  # Change to the specified directory
+            # Create necessary directories
+            Path(self.local_dir).mkdir(parents=True, exist_ok=True)
+            Path(self.log_dir).mkdir(parents=True, exist_ok=True)
+            
+            # First run OCEAN briefly to generate DFT inputs
+            print("Starting OCEAN to generate DFT inputs...")
             self.handle_input()
+            
+            # Start OCEAN process
+            process = subprocess.Popen('./ocean.sh', shell=True, text=True,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+                                    cwd=self.local_dir)
+            
+            # Wait for DFT input generation
+            print("Waiting for DFT inputs to be generated...")
+            time.sleep(10)  # Give some time for files to be created
+            
+            # Check if DFT folder exists and contains input files
+            dft_dir = os.path.join(self.local_dir, 'DFT')
+            if os.path.exists(dft_dir) and os.path.exists(os.path.join(dft_dir, 'scf.in')):
+                print("DFT inputs generated. Stopping OCEAN process...")
+                process.terminate()
+                
+                # Create relax directory
+                relax_dir = os.path.join(self.local_dir, 'relax')
+                Path(relax_dir).mkdir(parents=True, exist_ok=True)
+                
+                # Copy and modify SCF input for relaxation
+                with open(os.path.join(dft_dir, 'scf.in'), 'r') as f:
+                    scf_input = f.read()
+                
+                # Modify the input for relaxation
+                relax_input = scf_input.replace("'scf'", "'relax'")
+                relax_input = self._add_relax_parameters(relax_input)
+                
+                # Write the modified input
+                with open(os.path.join(relax_dir, 'relax.in'), 'w') as f:
+                    f.write(relax_input)
+                
+                print("Created relaxation input in relax directory.")
+                return True
+            else:
+                print("Failed to generate DFT inputs.")
+                return False
 
+        except Exception as e:
+            print(f"Error in run_local: {e}")
+            return False
 
-            if self._check_folder_exists_with_content(f'{self.local_dir}/CNBSE/') and overwrite==False:
-                print('Heavy part is already done. if you want to rerun it use overwrite=true')
-                # for atom_sites in self.list_ids:
-                #     self.workflow.add_instance(node1=f'{self.element}-{self.edge} edge',
-                #                             node2=f'XAS {self.element} {atom_sites}', layer='xas results',)
-            else:                          
-                os.system('rm -r ./*')
-                os.system(f'cp {self.root}/ocean.sh {self.local_dir}/')
-                # print(f"Changed directory to: {self.path}")
-                #
-                # result = subprocess.run(["./ocean.sh"], capture_output=True, text=True)
-                result = subprocess.Popen('./ocean.sh', shell=True, text=True, 
-                                          stdout=subprocess.PIPE,
-                                            stderr=subprocess.PIPE)
-                if monitor:
-                    self.monitor()
-
-        except FileNotFoundError:
-            print(f"Error: The directory {self.local_dir} does not exist.")
-        
     def _run_remote(self, overwrite=False, monitor=True):
-        
+        """Execute the calculation remotely with the new workflow."""
         try:
             self.handle_input()
             self.server.connect()
-            if self.server.check_folder_exists_and_not_empty(f'{self.remote_dir}/CNBSE/') and overwrite==False:
-                print('Heavy part is already done. if you want to rerun it use overwrite=true')
-            else:  
-                if self.server.sbatch:                      
-                    command=f'cd {self.remote_dir}; pwd; sbatch job.sh'
-                    stdin, stdout, stderr=self.server.ssh_client.exec_command(command)
-                    # transport.close()
-                    output = stdout.read().decode('utf-8')
-                    error_output = stderr.read().decode('utf-8')
-                    if error_output:
-                        print(f"Error submitting job: {error_output}")
-                    match = re.search(r'Submitted batch job (\d+)', output)
-                    if match:
-                        job_id = match.group(1)
-                        print(f"Job submitted successfully with Job ID: {job_id}")
-                        self.job_id=job_id
-                    else:
-                        print("Could not retrieve Job ID from sbatch output.")
-                else:
-
-                    # command=f'source ~/miniforge3/bin/activate new ; cd {self.remote_dir}; /home/a.geondzhian/bin/ocean-acbn0/ocean.pl ocean.in > log &'
-                    command=f'source /etc/profile.d/modules.sh ; module load q-ch/qe/7.3.1/gcc/11.2/mpich/mkl; cd {self.remote_dir}; /home/a.geondzhian/bin/ocean-acbn0/ocean.pl ocean.in > log &'
-                    # command=f'cd {self.remote_dir}; pwd; /home/a.geondzhian/bin/ocean-acbn0/ocean.pl ocean.in > log'
-                    transport=self.server.ssh_client.get_transport()
-                    channel=transport.open_session()
-                    try:
-                        # Execute the command
-                        channel.exec_command(command)
-                    finally:
-                        # Close the channel to free resources
-                        channel.close()
-                    
+            
+            # First run OCEAN briefly to generate DFT inputs
+            print("Starting OCEAN to generate DFT inputs...")
+            if self.server.sbatch:
+                command = f'cd {self.remote_dir}; sbatch --wait job.sh'
+            else:
+                command = f'cd {self.remote_dir}; ./ocean.pl ocean.in'
+            
+            # Start OCEAN process
+            stdin, stdout, stderr = self.server.ssh_client.exec_command(command)
+            
+            # Wait for DFT input generation
+            time.sleep(10)  # Give some time for files to be created
+            
+            # Check if DFT folder exists and contains input files
+            if self.server.check_file_exists(f'{self.remote_dir}/DFT/scf.in'):
+                print("DFT inputs generated. Stopping OCEAN process...")
+                if self.job_id:
+                    self.cancel(self.job_id)
                 
-                if monitor:
-                    self._remote_monitor()
+                # Download the SCF input
+                self.server.download_file('scf.in', f'{self.local_dir}/DFT', f'{self.remote_dir}/DFT/')
+                
+                # Create relax directory and modified input
+                relax_dir = os.path.join(self.local_dir, 'relax')
+                Path(relax_dir).mkdir(parents=True, exist_ok=True)
+                
+                # Read and modify the SCF input
+                with open(os.path.join(self.local_dir, 'DFT', 'scf.in'), 'r') as f:
+                    scf_input = f.read()
+                
+                # Modify the input for relaxation
+                relax_input = scf_input.replace("'scf'", "'relax'")
+                relax_input = self._add_relax_parameters(relax_input)
+                
+                # Write the modified input
+                with open(os.path.join(relax_dir, 'relax.in'), 'w') as f:
+                    f.write(relax_input)
+                
+                # Upload the relaxation input to the server
+                self.server.upload_file(f"{relax_dir}/relax.in", f"{self.remote_dir}/relax")
+                
+                print("Created and uploaded relaxation input.")
+                return True
+            else:
+                print("Failed to generate DFT inputs.")
+                return False
 
         except Exception as e:
-            print(f"{e}")
+            print(f"Error in run_remote: {e}")
+            return False
+
+    def _add_relax_parameters(self, input_content):
+        """Add relaxation-specific parameters to the input file."""
+        # Split the input content into sections
+        sections = input_content.split('/')
+        
+        # Add IONS section if it doesn't exist
+        if '&IONS' not in input_content:
+            ions_section = """
+&IONS
+    ion_dynamics = 'bfgs'
+/"""
+            sections.insert(-1, ions_section)
+        
+        # Modify CONTROL section
+        control_section = [s for s in sections if '&CONTROL' in s][0]
+        if 'calculation' in control_section:
+            control_section = control_section.replace("'scf'", "'relax'")
+        else:
+            control_section = control_section + "\n    calculation = 'relax'"
+        
+        # Replace the old CONTROL section
+        for i, section in enumerate(sections):
+            if '&CONTROL' in section:
+                sections[i] = control_section
+                break
+        
+        # Join the sections back together
+        return '/'.join(sections)
 
     def __read_error_file(self,file_path):
         """
@@ -726,3 +814,344 @@ class Calculation():
             info_str += f"  - {method}\n"
         
         print(info_str)
+
+    def setup_relax(self):
+        """Setup QE relaxation calculation using OCEAN pseudopotentials."""
+        relax_dir = os.path.join(self.local_dir, 'relax')
+        Path(relax_dir).mkdir(parents=True, exist_ok=True)
+        
+        # Create QE input using parameters from OCEAN
+        self._create_qe_input(relax_dir)
+        
+        if self.server:
+            remote_relax_dir = f'{self.remote_dir}/relax'
+            self.server.connect()
+            self.server.remote_dir_init(remote_relax_dir)
+            self.server.upload_file(f"{relax_dir}/relax.in", remote_relax_dir)
+            self.server.upload_file(f"{relax_dir}/job_relax.sh", remote_relax_dir)
+            
+    def _create_qe_input(self, relax_dir):
+        """Create Quantum ESPRESSO input for relaxation."""
+        # Extract pseudopotential info from OCEAN input
+        pseudo_dir = self.input_data.get('pseudo_dir', './pseudo')
+        
+        # Basic QE input template
+        qe_input = f"""&CONTROL
+    calculation = 'relax'
+    restart_mode = 'from_scratch'
+    pseudo_dir = '{pseudo_dir}'
+    outdir = './out'
+    prefix = 'relax'
+/
+&SYSTEM
+    ibrav = 0
+    nat = {len(self.structure.atoms)}
+    ntyp = {len(set(self.structure.atoms.get_chemical_symbols()))}
+    ecutwfc = {self.input_data.get('ecutwfc', 60)}
+    ecutrho = {self.input_data.get('ecutrho', 240)}
+/
+&ELECTRONS
+    conv_thr = 1.0d-8
+    mixing_beta = 0.7
+/
+&IONS
+    ion_dynamics = 'bfgs'
+/
+
+ATOMIC_SPECIES
+"""
+        # Add atomic species
+        species = set(self.structure.atoms.get_chemical_symbols())
+        for sp in species:
+            mass = self.structure.atoms[self.structure.atoms.get_chemical_symbols().index(sp)].mass
+            pp_file = f"{sp}.UPF"  # Assuming OCEAN uses UPF format
+            qe_input += f"{sp} {mass:.5f} {pp_file}\n"
+
+        # Add cell parameters
+        cell = self.structure.atoms.get_cell()
+        qe_input += "\nCELL_PARAMETERS angstrom\n"
+        for vec in cell:
+            qe_input += f"{vec[0]:.8f} {vec[1]:.8f} {vec[2]:.8f}\n"
+
+        # Add atomic positions
+        qe_input += "\nATOMIC_POSITIONS crystal\n"
+        symbols = self.structure.atoms.get_chemical_symbols()
+        positions = self.structure.atoms.get_scaled_positions()
+        for sym, pos in zip(symbols, positions):
+            qe_input += f"{sym} {pos[0]:.8f} {pos[1]:.8f} {pos[2]:.8f}\n"
+
+        # Write QE input file
+        with open(os.path.join(relax_dir, 'relax.in'), 'w') as f:
+            f.write(qe_input)
+
+        # Create job script for relaxation
+        if self.server:
+            job_script = f"""#!/bin/bash
+#SBATCH -N 1
+#SBATCH -n {self.server.cores}
+#SBATCH -t 24:00:00
+
+module load quantum-espresso
+
+mpirun -np {self.server.cores} pw.x -in relax.in > relax.out
+"""
+            with open(os.path.join(relax_dir, 'job_relax.sh'), 'w') as f:
+                f.write(job_script)
+
+    def run_relax(self):
+        """Run the relaxation calculation after the input has been prepared."""
+        relax_dir = os.path.join(self.local_dir, 'relax')
+        
+        if not os.path.exists(os.path.join(relax_dir, 'relax.in')):
+            print("Relaxation input not found. Please run the main calculation first to generate inputs.")
+            return False
+        
+        if self.server:
+            try:
+                # Create job script for relaxation
+                job_script = f"""#!/bin/bash
+#SBATCH -N 1
+#SBATCH -n {self.server.cores}
+#SBATCH -t 24:00:00
+
+module load quantum-espresso
+mpirun -np {self.server.cores} pw.x -in relax.in > relax.out
+"""
+                job_script_path = os.path.join(relax_dir, 'job_relax.sh')
+                with open(job_script_path, 'w') as f:
+                    f.write(job_script)
+                
+                # Upload job script
+                self.server.connect()
+                self.server.upload_file(job_script_path, f"{self.remote_dir}/relax")
+                
+                # Submit the job
+                command = f'cd {self.remote_dir}/relax; sbatch job_relax.sh'
+                stdin, stdout, stderr = self.server.ssh_client.exec_command(command)
+                output = stdout.read().decode('utf-8')
+                
+                # Get job ID
+                match = re.search(r'Submitted batch job (\d+)', output)
+                if match:
+                    job_id = match.group(1)
+                    print(f"Relaxation job submitted with ID: {job_id}")
+                    return job_id
+                else:
+                    print("Could not retrieve Job ID from sbatch output.")
+                    return None
+                
+            except Exception as e:
+                print(f"Error submitting relaxation job: {e}")
+                return None
+        else:
+            try:
+                # Run locally
+                subprocess.run(['pw.x', '-in', 'relax.in'], 
+                             cwd=relax_dir,
+                             check=True)
+                print("Relaxation completed successfully")
+                return True
+            except subprocess.CalledProcessError as e:
+                print(f"Error running relaxation: {e}")
+                return False
+
+    def check_relax_status(self, job_id=None):
+        """Check the status of the relaxation calculation."""
+        if not job_id and not self.server:
+            # Check local calculation
+            relax_out = os.path.join(self.local_dir, 'relax', 'relax.out')
+            if os.path.exists(relax_out):
+                with open(relax_out, 'r') as f:
+                    content = f.read()
+                    if 'JOB DONE' in content:
+                        print("Relaxation completed successfully")
+                        return 'COMPLETED'
+                    else:
+                        print("Relaxation still running or failed")
+                        return 'RUNNING'
+            return 'UNKNOWN'
+        
+        elif self.server and job_id:
+            # Check remote calculation
+            try:
+                self.server.connect()
+                stdin, stdout, stderr = self.server.ssh_client.exec_command(f'squeue -j {job_id}')
+                output = stdout.read().decode('utf-8')
+                
+                if job_id not in output:
+                    # Job not in queue, check if completed successfully
+                    stdin, stdout, stderr = self.server.ssh_client.exec_command(
+                        f'cat {self.remote_dir}/relax/relax.out')
+                    content = stdout.read().decode('utf-8')
+                    
+                    if 'JOB DONE' in content:
+                        print("Relaxation completed successfully")
+                        return 'COMPLETED'
+                    else:
+                        print("Relaxation failed")
+                        return 'FAILED'
+                else:
+                    print("Relaxation still running")
+                    return 'RUNNING'
+                
+            except Exception as e:
+                print(f"Error checking relaxation status: {e}")
+                return 'UNKNOWN'
+        
+        return 'UNKNOWN'
+
+    def get_relaxed_structure(self):
+        """Get the relaxed structure from the relaxation calculation output."""
+        relax_dir = os.path.join(self.local_dir, 'relax')
+        relax_out = os.path.join(relax_dir, 'relax.out')
+        
+        # If running remotely, download the output file first
+        if self.server:
+            try:
+                self.server.connect()
+                self.server.download_file('relax.out', relax_dir, f'{self.remote_dir}/relax/')
+            except Exception as e:
+                print(f"Error downloading relaxation output: {e}")
+                return None
+        
+        if not os.path.exists(relax_out):
+            print("Relaxation output file not found")
+            return None
+        
+        try:
+            with open(relax_out, 'r') as f:
+                content = f.read()
+            
+            # Find the final coordinates section
+            final_coords_match = re.search(r'Begin final coordinates(.*?)End final coordinates', 
+                                         content, re.DOTALL)
+            if not final_coords_match:
+                print("Could not find final coordinates in output")
+                return None
+            
+            coords_section = final_coords_match.group(1)
+            
+            # Extract cell parameters
+            cell_match = re.search(r'CELL_PARAMETERS.*?\n(([-+]?\d*\.?\d+\s+[-+]?\d*\.?\d+\s+[-+]?\d*\.?\d+\s*\n){3})', 
+                                 coords_section, re.DOTALL)
+            if not cell_match:
+                print("Could not find cell parameters in output")
+                return None
+            
+            cell_lines = cell_match.group(1).strip().split('\n')
+            cell = [[float(x) for x in line.split()] for line in cell_lines]
+            
+            # Extract atomic positions
+            pos_match = re.search(r'ATOMIC_POSITIONS.*?\n((?:[-+\w\s.]+\n)+)', 
+                                coords_section, re.DOTALL)
+            if not pos_match:
+                print("Could not find atomic positions in output")
+                return None
+            
+            pos_lines = pos_match.group(1).strip().split('\n')
+            positions = []
+            symbols = []
+            for line in pos_lines:
+                parts = line.split()
+                symbols.append(parts[0])
+                pos = [float(x) for x in parts[1:4]]
+                positions.append(pos)
+            
+            # Create new Atoms object with relaxed structure
+            from ase.atoms import Atoms
+            relaxed_structure = Atoms(
+                symbols=symbols,
+                cell=cell,
+                pbc=True
+            )
+            
+            # Set positions based on coordinate type
+            if 'crystal' in coords_section.lower():
+                relaxed_structure.set_scaled_positions(positions)
+            else:  # Assuming cartesian if not crystal
+                relaxed_structure.set_positions(positions)
+            
+            # Save relaxed structure to file
+            from ase.io import write as ase_write
+            ase_write(os.path.join(relax_dir, 'relaxed.xyz'), relaxed_structure)
+            
+            print("Successfully extracted relaxed structure")
+            return relaxed_structure
+            
+        except Exception as e:
+            print(f"Error extracting relaxed structure: {e}")
+            return None
+
+    def ocean_prerun(self, monitor=True):
+        """Run OCEAN until the first scf.out appears.
+        
+        This method runs OCEAN briefly to generate DFT inputs and stops once scf.out is detected.
+        
+        Args:
+            monitor (bool): Whether to monitor the process. Defaults to True.
+            
+        Returns:
+            bool: True if scf.out was generated successfully, False otherwise.
+        """
+        try:
+            # Create necessary directories
+            Path(self.local_dir).mkdir(parents=True, exist_ok=True)
+            Path(self.log_dir).mkdir(parents=True, exist_ok=True)
+            
+            # Handle input files
+            self.handle_input()
+            
+            if self.server:
+                # Remote execution
+                self.server.connect()
+                
+                # Start OCEAN process
+                if self.server.sbatch:
+                    command = f'cd {self.remote_dir}; sbatch --wait job.sh'
+                else:
+                    command = f'cd {self.remote_dir}; {self.server.command}'
+                
+                # Execute command and start monitoring
+                stdin, stdout, stderr = self.server.ssh_client.exec_command(command)
+                
+                if monitor:
+                    # Monitor for scf.out appearance
+                    max_wait_time = 300  # 5 minutes timeout
+                    start_time = time.time()
+                    while time.time() - start_time < max_wait_time:
+                        if self.server.check_file_exists(f'{self.remote_dir}/DFT/scf.out'):
+                            print("DFT inputs generated successfully.")
+                            # Kill the OCEAN process since we have scf.out
+                            if self.job_id:
+                                self.cancel(self.job_id)
+                            return True
+                        time.sleep(5)
+                    print("Timeout waiting for scf.out generation.")
+                    return False
+                    
+            else:
+                # Local execution
+                process = subprocess.Popen('./ocean.sh', shell=True, text=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE,
+                                        cwd=self.local_dir)
+                
+                if monitor:
+                    # Monitor for scf.out appearance
+                    max_wait_time = 300  # 5 minutes timeout
+                    start_time = time.time()
+                    while time.time() - start_time < max_wait_time:
+                        if os.path.exists(os.path.join(self.local_dir, 'DFT', 'scf.out')):
+                            print("DFT inputs generated successfully.")
+                            process.terminate()
+                            return True
+                        time.sleep(5)
+                    print("Timeout waiting for scf.out generation.")
+                    process.terminate()
+                    return False
+                    
+        except Exception as e:
+            print(f"Error in ocean_prerun: {e}")
+            return False
+            
+        return True
