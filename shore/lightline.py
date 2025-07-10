@@ -34,6 +34,7 @@ class XASSpectraRunner:
         self.init_fdmnes()
         
         self.rpath=f'matsolver_workdir/{self.current_id}'
+        self.remote_dir=f'{self.server.root}/{self.rpath}'
 
     def init_fdmnes(self):
         output = []
@@ -45,7 +46,6 @@ class XASSpectraRunner:
 
     def run(self):
             
-        self.remote_dir=f'{self.server.root}/{self.rpath}'
         self.server.connect()
         self.server.remote_dir_init(f"{self.rpath}")
         self.server.upload_file(self.input_name, self.remote_dir)
