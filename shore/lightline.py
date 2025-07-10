@@ -59,6 +59,7 @@ class XASSpectraRunner:
     def check_status(self):
         self.status='Running'
         try:
+            self.server.connect()
             self.server.download_file('out', f'{self.local_dir}/', f'{self.remote_dir}/') 
             try: 
                 with open(f'{self.local_dir}/out') as f:
@@ -73,6 +74,7 @@ class XASSpectraRunner:
     
     def get_spectra(self):
         try:
+            self.server.connect()
             self.server.download_file(f'xas_out_{self.current_id}.txt', f'{self.local_dir}/', f'{self.remote_dir}/') 
         except:
             print('error reading xas')
