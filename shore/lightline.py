@@ -26,6 +26,8 @@ class XASSpectraRunner:
         self.sim.P.Convolution = True
         self.sim.P.Rpotmax = 13.
         self.sim.P.Green = True
+        self.rpath=f'matsolver_workdir/{self.current_id}'
+        self.remote_dir=f'{self.server.root}/{self.rpath}'
 
         self.server=server
         self.input_file=f'xas_inp_{self.current_id}'
@@ -33,8 +35,7 @@ class XASSpectraRunner:
         self.sim.WriteInputFile(self.input_name, overwrite=True)
         self.init_fdmnes()
         
-        self.rpath=f'matsolver_workdir/{self.current_id}'
-        self.remote_dir=f'{self.server.root}/{self.rpath}'
+
 
     def init_fdmnes(self):
         output = []
