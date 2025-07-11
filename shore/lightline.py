@@ -103,6 +103,20 @@ class XASSpectraRunner:
         else:
             print("Could not retrieve Job ID from sbatch output.")
 
+    def _read(self):
+        # Pattern for numbered files, e.g. xas_out_123_1.txt, xas_out_123_2.txt ...
+        spectra={}
+        try:
+            single_file = os.path.join(self.local_dir, f'xas_out_{self.current_id}.txt')
+            if os.path.exists(single_file):
+                data = np.loadtxt(single_file, skiprows=2).transpose()
+                energy=self.read_first_element_of_first_line(single_file)
+                data[0]+=energy
+                spectra[0] = data.tolist()
+                return spectra
+        except:
+                raise FileNotFoundError(f"No XAS spectrum files found for id {self.current_id}")
+       
 
     def read(self, conv=True):
         # Pattern for numbered files, e.g. xas_out_123_1.txt, xas_out_123_2.txt ...
