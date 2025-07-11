@@ -107,11 +107,9 @@ class XASSpectraRunner:
         # Pattern for numbered files, e.g. xas_out_123_1.txt, xas_out_123_2.txt ...
         spectra={}
         try:
-            single_file = os.path.join(self.local_dir, f'xas_out_{self.current_id}.txt')
+            single_file = os.path.join(self.local_dir, f'xas_out_{self.current_id}_conv.txt')
             if os.path.exists(single_file):
                 data = np.loadtxt(single_file, skiprows=2).transpose()
-                energy=self.read_first_element_of_first_line(single_file)
-                data[0]+=energy
                 spectra[0] = data.tolist()
                 return spectra
         except:
