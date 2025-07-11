@@ -26,10 +26,11 @@ class XASSpectraRunner:
         self.sim.P.Convolution = True
         self.sim.P.Rpotmax = 13.
         self.sim.P.Green = True
+        self.server=server
         self.rpath=f'matsolver_workdir/{self.current_id}'
         self.remote_dir=f'{self.server.root}/{self.rpath}'
 
-        self.server=server
+   
         self.input_file=f'xas_inp_{self.current_id}'
         self.input_name=f'{self.local_dir}/xas_inp_{self.current_id}'
         self.sim.WriteInputFile(self.input_name, overwrite=True)
@@ -157,7 +158,3 @@ class XASSpectraRunner:
             first_element = first_line.split()[0]  # split by whitespace and take first element
             return float(first_element)
 
-# if __name__=='__main__':
-#     test=XASSpectraRunner(id=0,dir='./test', cif_path='./BaTiO3.cif', resonant_atom='O', )
-#     # test.run()
-#     test.read()
