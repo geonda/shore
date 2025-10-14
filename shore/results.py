@@ -267,7 +267,7 @@ class ResultsHandler:
         x = self.data_rixs[element][core_level][photon_in][step][photon_out]['energy']
         return x, y, z
             
-    def rixsmap(self,xas=None,element='O', core_level='1s', photon_in=1, photon_out=2, starting_energy=-2, delta_energy=2, rshift=0, ):
+    def rixsmap(self,xas=None,element='O', core_level='1s', photon_in=1, photon_out=2, starting_energy=-2, delta_energy=2, rshift=0,):
 
 
         custom_colorscale=[
@@ -337,7 +337,6 @@ class ResultsHandler:
         ))
         return fig
 
-
     def plot_xas(self, fig=None, element=None, core_level=None, site_number=None, polarization=None, name=None, norm=True, lw=2, lc=None):
         """Plot XAS absorption vs energy using Plotly."""
         if not fig:
@@ -385,7 +384,8 @@ class ResultsHandler:
                     spectrum = [s / max_intensity for s in spectrum]
                 
                 # Updated name without polarization
-                
+                if not name:
+                    name=f'{el} - {cl}'
                 if lc:
                     # Add trace for each polarization
                     fig.add_trace(go.Scatter(
@@ -417,11 +417,11 @@ class ResultsHandler:
         )
         from shore import plotly_formatting
         fig=plotly_formatting(fig)
+        fig.update_xaxes(range=[min(energy),max(energy)])
         return fig
 
                 # Show the figure
                 
-
     def info(self):
         """
         Display information about the atomic structure including attributes and methods.
