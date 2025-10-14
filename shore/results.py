@@ -367,69 +367,44 @@ class ResultsHandler:
         # Loop through the selected elements, core levels, and site numbers
         for el in elements:
             for cl in core_levels:
+                spectrum = 0
                 for sn in site_numbers:
-                    spectrum = 0
                     if polarization is None:
                         # Sum over all polarizations
                         for pol in self.data[el][cl][sn]:
                             energy = self.data[el][cl][sn][pol]['energy']
                             spectrum += self.data[el][cl][sn][pol]['spectrum']
-                        
-                        if norm:  # Normalize the spectrum if required
-                            max_intensity = max(spectrum)  # Avoid division by zero
-                            spectrum = [s / max_intensity for s in spectrum]
-                        
-                        if not name:
-                            name = f'{el} Site {sn}'  # Updated name without polarization
-                        
-                        if lc:
-                            # Add trace for each polarization
-                            fig.add_trace(go.Scatter(
-                                x=energy,
-                                y=spectrum,
-                                mode='lines',
-                                name=name,
-                                line=dict(width=lw,color=lc)
-                            ))
-                        else:
-                            fig.add_trace(go.Scatter(
-                                x=energy,
-                                y=spectrum,
-                                mode='lines',
-                                name=name,
-                                line=dict(width=lw)
-                            ))
-                    else:
-                        # Specific polarization case
+                    else: 
                         energy = self.data[el][cl][sn][polarization]['energy']
                         spectrum += self.data[el][cl][sn][polarization]['spectrum']
-
-                        if norm:  # Normalize the spectrum if required
-                            max_intensity = max(spectrum)  # Avoid division by zero
-                            spectrum = [s / max_intensity for s in spectrum]
-                        
                         if not name:
-                            name = f'{el} {cl} Site {sn} Polarization {polarization}'
+                            name = f'{el} {cl} Polarization {polarization}'
+                 
+                if norm:  # Normalize the spectrum if required
+                    max_intensity = max(spectrum)  # Avoid division by zero
+                    spectrum = [s / max_intensity for s in spectrum]
+                
+                # Updated name without polarization
+                
+                if lc:
+                    # Add trace for each polarization
+                    fig.add_trace(go.Scatter(
+                        x=energy,
+                        y=spectrum,
+                        mode='lines',
+                        name=name,
+                        line=dict(width=lw,color=lc)
+                    ))
+                else:
+                    fig.add_trace(go.Scatter(
+                        x=energy,
+                        y=spectrum,
+                        mode='lines',
+                        name=name,
+                        line=dict(width=lw)
+                    ))
+                    
                         
-                        # Add trace for the specified polarization
-                        if lc:
-                            # Add trace for each polarization
-                            fig.add_trace(go.Scatter(
-                                x=energy,
-                                y=spectrum,
-                                mode='lines',
-                                name=name,
-                                line=dict(width=lw,color=lc)
-                            ))
-                        else:
-                            fig.add_trace(go.Scatter(
-                                x=energy,
-                                y=spectrum,
-                                mode='lines',
-                                name=name,
-                                line=dict(width=lw)
-                            ))
-
         # Update layout for scientific styling with legend settings
         fig.update_layout(
             # title='X-ray Absorption Spectrum',
