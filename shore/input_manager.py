@@ -19,32 +19,6 @@ from IPython.display import JSON as js
 import threading
 
 
-{
-
-        "dft.program": "qe",
-        'dft.den.kmesh':  '-2',
-        "dft.ecut":' -1',
-
-        "screen.nbands":  10,
-        "screen.final.dr": "0.02",
-        "screen.shells": "6.0",
-        "screen.kmesh": '-2',
-        "screen.core_offset.enable" : "true",
-
-        'bse.core.broaden': '-1',
-        'bse.core.haydock.converge.thresh' : '0.001 5',
-        'bse.core.screen_radius': ' 5.5',
-        'bse.nbands':  10,
-        "bse.core.haydock.niter":  '1000',
-        "bse.kmesh":' -2',
-
-        "psp.pp_database": "ONCVPSP-PBE-PDv0.4-stringent",
-        "psp.ecut_quality":  'high',
-        "opf.program": "hamann",
-        "computer.para_prefix": 'srun ',
-
-        }
-
 
 class default:
     def __init__(self):
@@ -56,7 +30,7 @@ class default:
     'dft.den.kmesh':  '-2',
     "dft.ecut":' -1',
     "diemac":10000,
-
+    "dft.occopt":6,
     # screen
     "screen.nbands":  10,
     "screen.kmesh": '-2',
@@ -71,6 +45,16 @@ class default:
     "screen.grid.shells": " -1 4 6 8 10",
     "screen.lmax": "2",
     "screen.shells": "3.5 4.0 4.5 5.0 5.5 6.0",
+
+    "diemac": 6,
+    "dft.diagonalization": "david",
+    "dft.screen.diagonalization": "ppcg",
+    "dft.bse.diagonalization": "ppcg",
+    "nspin": 2,
+    "nstep": 100,
+    "mixing": 0.5,
+
+
 
     #bse
     "bse.kmesh":' -2',
@@ -426,7 +410,7 @@ class Light:
                 f.write(f"{photon.photon_energy}\n")
 
 class Matter:
-    def __init__(self,structure=None, **kwargs):
+    def __init__(self,structure=None, ground_state=None, bse=None, screening=None, xas=None, prefix=None, rixs=None, **kwargs):
         """
         Initializes the Matter class with DFT, CNBSE, and general dictionaries.
        
@@ -437,6 +421,70 @@ class Matter:
             del kwargs['load']
         else:
             self.params=default().input
+
+         #dft
+        if ground_state:
+            for k, v in ground_state.items():
+                if k == 'bands':
+                    self.params['nbands'] = v
+                elif k == 'kmesh':
+                    self.params['dft.den.kmesh'] = v
+                elif k == 'ecut':
+                    self.params['dft.ecut'] = v
+                elif k == 'nspin':
+                    self.params['nspin'] = v
+                elif k =='starting_magnetization':
+                    self.params['smag']=''
+                    for item in v.keys():
+                        self.params['smag']+=f"starting_magnetization({item})={v[item]}, "
+                elif k== 'hubbard':
+                    self.params["dft.verbatim.qe.hubbard"]=''
+                    for u in v.keys():
+                        for atoms in v[u].keys():
+                            for orbital in v[u][atoms]:
+                                self.params["dft.verbatim.qe.hubbard"]+=f"{u} {atoms}-{orbital} {v[u][atoms][orbital]} , \n"
+        if screening:
+            for k, v in screening.items():
+                if k == 'bands':
+                    self.params['screen.nbands'] = v
+                elif k == 'kmesh':
+                    self.params['screen.kmesh'] = v
+                elif k=='diemac':
+                    self.params['diemac'] = v
+
+        if bse:
+            for k, v in bse.items():
+                if k == 'bands':
+                    self.params['bse.nbands'] = v
+                elif k == 'kmesh':
+                    self.params['bse.kmesh'] = v
+
+        if xas:
+            for k, v in xas.items():
+                if k == 'broad':
+                    self.params['bse.core.broaden'] = v
+                elif k == 'range':
+                    self.params['cnbse.spect_range'] = v
+        if rixs:
+            self.params['calc']='rxs'
+            self.params['cnbse.solver']='gmres'
+            self.params['bse.core.gmres.estyle']='range'
+            
+            for k, v in rixs.items():
+                if k == 'photon_in':
+                    self.params['calc.photon_in'] = v
+                elif k == 'photon_out':
+                    self.params['calc.photon_out'] = v
+                elif k == 'core_broad':
+                    self.params['bse.core.broaden'] = v
+                elif k == 'val_broad':
+                    self.params['bse.val.broaden'] = v
+                elif k == 'range':
+                    self.params['cnbse.gmres.erange'] = v
+
+        if prefix:
+            self.params['computer.para_prefix'] = prefix
+          
         for k,v in kwargs.items():
             if k=='screen_dft_energy_range':
                 k='screen.dft_energy_range'
@@ -450,6 +498,7 @@ class Matter:
         # print(self.params)
         for item in self.params.keys():
             setattr(self,item,self.params[item])
+        
         
 
         

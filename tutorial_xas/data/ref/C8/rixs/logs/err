@@ -1,0 +1,4 @@
+Loading q-ch/qe/7.3.1/gcc/11.2/mpich/mkl
+  Loading requirement: devtools/math/mkl/2024.1.0.695
+    devtools/mpi/mpich/4.2.1/gcc/11.2
+Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG IEEE_DIVIDE_BY_ZERO

@@ -1,0 +1,48 @@
+&control
+  calculation = 'scf'
+  prefix = 'system'
+  pseudo_dir = '/home/a.geondzhian/ocean_work_dir/C8/xas/Common/psp/'
+  outdir = 'Out'
+  wfcdir = 'undefined'
+  tstress = .false.
+  tprnfor = true
+  wf_collect = .true.
+  disk_io = 'low'
+/
+&system
+  ibrav = 0
+  nat = 2
+  ntyp = 1
+  noncolin = .false.
+  lspinorb = .false.
+  ecutwfc = 90
+  occupations = 'smearing'
+  smearing = 'methfessel-paxton'
+  degauss = 0.02
+  nspin  = 2
+  tot_charge = 0
+  nosym = false
+  noinv = false
+  nbnd = 6
+starting_magnetization(1)=0,
+/
+&electrons
+  conv_thr = 1e-10
+  mixing_beta = 0.5
+  mixing_mode = 'plain'
+  electron_maxstep = 100
+  startingwfc = 'atomic+random'
+  startingpot = 'atomic'
+  diagonalization = 'david'
+/
+ATOMIC_SPECIES
+   C  0.0  C.UPF
+CELL_PARAMETERS cubic
+ 0.0000000000000000    3.3644165309065501   3.3644165309065501 
+ 3.3644165309065501    0.0000000000000000   3.3644165309065501 
+ 3.3644165309065501    3.3644165309065501   0.0000000000000000 
+ATOMIC_POSITIONS crystal
+   C  0.5000000000000000    0.5000000000000000    0.5000000000000000 
+   C  0.7500000000000000    0.7500000000000000    0.7500000000000000 
+K_POINTS automatic
+7 7 7 1 1 1

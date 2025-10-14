@@ -74,6 +74,7 @@ class Calculation():
         self.input_data=input.content.input
         self.job_id=None
         self.res=None
+        self.path=None
 
 
 
@@ -99,7 +100,7 @@ class Calculation():
             for id,_ in enumerate(self.input.light.photons):
                 self.server.connect()
                 self.server.upload_file(f"{self.local_dir}/photon{id+1}", self.remote_dir)
-            jc.JobScriptCreator(ncores=self.server.cores).generate_script(path=self.local_dir, command=self.server.command)
+            jc.JobScriptCreator(ncores=self.server.cores).generate_script(path=self.local_dir, command=self.server.command, module=self.server.module, extra=self.server.extra)
             self.server.connect()
             self.server.upload_file(f"{self.local_dir}/job.sh", self.remote_dir)
      
@@ -107,7 +108,7 @@ class Calculation():
         self.stages=dict(
                         parsing=['Storing parsed data','Finished running extractPsp','Done with parsing'],
                         atomic=['Entering OPF stage','Entering DFT stage'],
-                        dft=['Entering DFT stage','DFT for BSE final states complete','DFT section is complete'],
+                        dft=['Entering DFT stage','DFT section is complete'],
                         prep=['Entering PREP stage','Entering SCREENing stage'], 
                         screen=['Entering SCREENing stage','Time offset:'],
                         bse=['CNBSE stage','Ocean is done']
@@ -286,7 +287,6 @@ class Calculation():
             self.res=ResultsHandler(path=f'{self.local_dir}/results/', name=self.name)
             return self.res
       
-
     def _edge_short(self, edge):
         if edge=='K':
             return '1s'
@@ -328,7 +328,9 @@ class Calculation():
         """Execute a bash command in the directory under path."""
 
         if self.path is None:
-            raise ValueError("Path is not set. Please provide a valid path.")
+            self.path=os.getcwd()
+            # raise ValueError("Path is not set. Please provide a valid path.")
+        
         
         # Change the current working directory to the specified path
         try:
@@ -571,7 +573,7 @@ class Calculation():
                     self.progress['opf'] = 10
                 if 'Entering DFT stage' in line:
                     self.progress['dft'] = 30
-                if 'SCF stage complete' in line:
+                if 'DFT section is complete' in line:
                     self.progress['scf'] = 40
                 if 'Entering PREP stage' in  line:
                     self.progress['prep'] = 50

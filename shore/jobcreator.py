@@ -8,7 +8,7 @@ class JobScriptCreator:
         self.cpus_per_task=1
         self.nodes=1
 
-    def generate_script(self,path='./', command=None):
+    def generate_script(self,path='./', command=None, module='', extra=''):
         """Generate the job.sh script with the specified executable."""
         script_content = [
             "#!/bin/bash",
@@ -19,9 +19,8 @@ class JobScriptCreator:
             f"#SBATCH --cpus-per-task={self.cpus_per_task}",
             f"#SBATCH --nodes={self.nodes}",
             f"#SBATCH --time={self.time_limit}",
-            "export OMP_NUM_THREADS=1",
-            'source /etc/profile.d/modules.sh',
-            'module load devtools/mpi/openmpi/4.1.5/gcc/11.3',
+            f"{extra}\n",  # Command to execute the program
+            f"{module}\n",  # Command to execute the program
             f"{command}\n"  # Command to execute the program
         ]
 

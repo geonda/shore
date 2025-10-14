@@ -1,0 +1,515 @@
+Welcome to OCEAN
+################################################################################
+#                 OOO   CC  EEEE  AA  N  N                 #
+#                O   O C  C E    A  A NN N                 #
+#      **        O   O C    E    A  A NN N         **      #
+#     **         O   O C    EE   AAAA N NN          **     #
+#    ***    **   O   O C    E    A  A N NN    **    ***    #
+#   *****  ***   O   O C  C E    A  A N  N    ***  *****   #
+# **************  OOO   CC  EEEE A  A N  N  ************** #
+################################################################################
+Version 3.1.0
+  commit hash: b3b9c9f63ef20fc5559d03b9a6c4229670441d31
+Run differs
+Setup complete, parsing ...
+Unrecognized input flag: smag
+  Attempting legacy conversion
+Comment: Mixed new and legacy input:  psp.pp_database
+smag : dft.smag  starting_magnetization(1)=0, 
+screen.grid.deltar : screen.grid.deltar  0.10 0.15 0.25 0.25 0.25 
+dft.diagonalization : dft.diagonalization  david 
+screen.grid.rmode : screen.grid.rmode  lagrange uniform 
+Comment: Mixed new and legacy input:  bse.nbands
+screen.nbands : screen.nbands  80 
+Comment: Mixed new and legacy input:  dft.occopt
+screen.grid.shells : screen.grid.shells  -1 4 6 8 10 
+znucl : structure.znucl  6 
+Comment: Mixed new and legacy input:  dft.program
+Comment: Mixed new and legacy input:  bse.core.screen_radius
+rprim : structure.rprim  0.00000000000000 1.78037255500000 1.78037255500000 1.78037255500000 0.00000000000000 1.78037255500000 1.78037255500000 1.78037255500000 0.00000000000000 
+nspin : dft.nspin  2 
+Comment: Mixed new and legacy input:  dft.ecut
+screen.grid.rmax : screen.grid.rmax  10 
+typat : structure.typat  1 1 
+diemac : structure.epsilon  4.7 
+Comment: Mixed new and legacy input:  bse.core.haydock.converge.thresh
+opf.program : opf.program  hamann 
+Comment: Mixed new and legacy input:  screen.core_offset.enable
+edges : calc.edges  -6 1 0 
+Comment: Mixed new and legacy input:  dft.bse.diagonalization
+cnbse.spect_range : bse.core.plot.range  10000 -10 40 
+acell : structure.rscale  1.8897261258369282 1.8897261258369282 1.8897261258369282 
+Comment: Mixed new and legacy input:  screen.kmesh
+Comment: Mixed new and legacy input:  bse.core.haydock.niter
+Comment: Mixed new and legacy input:  bse.core.broaden
+Comment: Mixed new and legacy input:  psp.ecut_quality
+Comment: Mixed new and legacy input:  dft.screen.diagonalization
+screen.final.dr : screen.final.dr  0.02 
+xred : structure.xred  0.5000000000 0.5000000000 0.5000000000 0.7500000000 0.7500000000 0.7500000000 
+Comment: Mixed new and legacy input:  computer.para_prefix
+Comment: Mixed new and legacy input:  dft.den.kmesh
+nstep : dft.nstep  100 
+Comment: Mixed new and legacy input:  bse.kmesh
+nbands : bse.nbands  24 
+mixing : dft.mixing  0.5 
+screen.grid.ang : screen.grid.ang  5 11 11 9 7 
+screen.shells : screen.shells  3.5 4.0 4.5 5.0 5.5 6.0 
+screen.lmax : screen.grid.lmax  2 
+Storing parsed data
+
+dft.occopt 6 
+screen.grid.lmax 2 
+screen.grid.rmode lagrange uniform 
+bse.nbands 24 
+screen.nbands 80 
+screen.grid.deltar 0.10 0.15 0.25 0.25 0.25 
+dft.diagonalization david 
+psp.pp_database ONCVPSP-PBE-PDv0.4-stringent 
+dft.nspin 2 
+structure.rscale 1.8897261258369282 1.8897261258369282 1.8897261258369282 
+dft.smag starting_magnetization(1)=0, 
+dft.program qe 
+bse.core.screen_radius 5.5 
+dft.mixing 0.5 
+dft.nstep 100 
+screen.grid.shells -1 4 6 8 10 
+structure.typat 1 1 
+bse.core.plot.range 10000 -10 40 
+screen.kmesh -2 
+bse.core.haydock.niter 1000 
+structure.epsilon 4.7 
+bse.core.broaden 0.4 
+psp.ecut_quality high 
+dft.screen.diagonalization ppcg 
+screen.final.dr 0.02 
+bse.core.haydock.converge.thresh 0.001 5 
+opf.program hamann 
+screen.core_offset.enable true 
+dft.bse.diagonalization ppcg 
+dft.ecut -1 
+screen.grid.rmax 10 
+screen.shells 3.5 4.0 4.5 5.0 5.5 6.0 
+bse.kmesh -2 
+structure.rprim 0.00000000000000 1.78037255500000 1.78037255500000 1.78037255500000 0.00000000000000 1.78037255500000 1.78037255500000 1.78037255500000 0.00000000000000 
+screen.grid.ang 5 11 11 9 7 
+structure.xred 0.5000000000 0.5000000000 0.5000000000 0.7500000000 0.7500000000 0.7500000000 
+calc.edges -6 1 0 
+structure.znucl 6 
+computer.para_prefix srun -n 16 
+dft.den.kmesh -4 
+C
+ECUT: 90
+/home/a.geondzhian/bin/ocean-acbn0/ONCVPSP-PBE-PDv0.4.upf.json parsed
+--------------------------------------------
+Psuedopotentials from the PseudoDojo project. See http://www.pseudo-dojo.org and https://github.com/abinit/pseudo_dojo.
+Version: ONCVPSP-PBE-PDv0.4
+License info: CC BY 4.0
+Please cite the following paper: 
+    author = "M.J. {van Setten} and M. Giantomassi and E. Bousquet and M.J. Verstraete and D.R. Hamann and X. Gonze and G.-M. Rignanese",
+    doi = "https://doi.org/10.1016/j.cpc.2018.01.012",
+    journal = "Computer Physics Communications",
+    pages = "39 - 54",
+    title = "The PseudoDojo: Training and grading a 85 element optimized norm-conserving pseudopotential table",
+    volume = "226",
+    year = "2018"
+--------------------------------------------
+Pseudopotentials created using the ONCVPSP program, modified for OCEAN. See http://www.mat-simresearch.com and https://github.com/jtv3/oncvpsp  ONCVPSP version 3.3.1, OCEAN mod 3
+Please cite the following paper: 
+    author = "Hamann, D. R.",
+    doi = "10.1103/PhysRevB.88.085117",
+    issue = "8",
+    journal = "Phys. Rev. B",
+    month = "Aug",
+    pages = "085117",
+    publisher = "American Physical Society",
+    title = "Optimized norm-conserving Vanderbilt pseudopotentials",
+    volume = "88",
+    year = "2013"
+--------------------------------------------
+Finished running extractPsp
+1
+1
+C.UPF has 4 electrons
+C.UPF has 0 semicore electrons
+Total electrons in system: 8
+Total semi-core electrons in system: 0
+/home/a.geondzhian/ocean_work_dir/C8/xas/Common
+GRABBED 16 as the number of cpus to run with!
+16 has 5 factors
+1
+2
+4
+8
+16
+1
+4
+16
+Volume:	76.165670612055
+-4
+-2
+-2
+Bands: 80
+Bands: 24
+-1
+   5 5 5
+WARN!!
+  System was set to insulating, but occopt was set to not be 1
+System was set to insulating, but occopt was set to 6 not 1
+6:
+  1  2
+-6
+1
+0
+New JSON detected. Not running structure.pl
+New JSON detected. Not running edges.pl
+Done with parsing
+################################################################################
+Entering OPF stage
+6 1 0 27c915b63bd28a200696aaf95d2c8ca5
+6 1 0 27c915b63bd28a200696aaf95d2c8ca5
+27c915b63bd28a200696aaf95d2c8ca5 1 0 
+Previous run detected
+################################################################################
+Entering DFT stage
+Tue Oct 14 01:29:10 2025
+Need SCF run
+k4_4_4q0.125000_0.250000_0.375000 is new
+Will run k4_4_4q0.125000_0.250000_0.375000
+k4_4_4q0.125000_0.250000_0.375000 is new
+Will run k4_4_4q0.125000_0.250000_0.375000
+Condensing two runs
+Done parsing input for DFT stage
+local
+Testing parallel QE execution
+srun -n 1 /home/a.geondzhian/bin/ocean-acbn0/pw.x  -inp scf.in > test.out 2>&1
+Memory estimate 19.91
+Min pool size 0.9
+ N procs     Pool     Band        Cost
+      15       15        1       6.71165
+      16        8        1       6.93064
+      13       13        1       7.83026
+      14        7        1       8.19075
+      15        5        1       8.53825
+Testing parallel QE execution
+srun -n 15 /home/a.geondzhian/bin/ocean-acbn0/pw.x  -npool 15  -inp scf.in > test.out 2>&1
+Memory estimate 11.66
+Min pool size 0.9
+ N procs     Pool     Band        Cost
+      15       15        1       6.71165
+      16        8        1       6.93064
+      13       13        1       7.83026
+      14        7        1       8.19075
+      15        5        1       8.53825
+15  15
+srun -n 15 /home/a.geondzhian/bin/ocean-acbn0/pw.x  -npool 15  -inp scf.in > scf.out 2>&1
+QE62!!
+0
+SCF stage complete, total energy: -1.20378653112015
+Exporting density from SCF
+########  QE convert
+DENPOT VERSION 7.3
+srun -n 1 /home/a.geondzhian/bin/ocean-acbn0/pp.x  -npool 1  -inp pp.in > pp.out 2>&1
+1.333545256E-02
+ Plan using FFTW:          32          32          32       32768
+Density export complete
+Exporting potential from SCF
+DENPOT VERSION 7.3
+srun -n 1 /home/a.geondzhian/bin/ocean-acbn0/pp.x  -npool 1  -inp pp2.in > pp2.out 2>&1
+QE fix 1 system.pot
+POT: 0
+1.071538685E+00
+Potential export complete
+k4_4_4q0.125000_0.250000_0.375000:  32768000
+Running NSCF run for: k4_4_4q0.125000_0.250000_0.375000
+k4_4_4q0.125000_0.250000_0.375000
+../Out/system.save   Out/system.save
+/home/a.geondzhian/ocean_work_dir/C8/xas/DFT/k4_4_4q0.125000_0.250000_0.375000
+QE version 7.3
+local
+Testing parallel QE execution
+srun -n 16 /home/a.geondzhian/bin/ocean-acbn0/pw.x  -npool 16  -inp nscf.in > test.out 2>&1
+Memory estimate 19.85
+Min pool size 0.9
+ N procs     Pool     Band        Cost
+      16       16        1       8.07224
+      16        8        1       8.14564
+      16        4        1       8.29593
+      16        2        1       8.61064
+      15        5        1       8.90522
+../Out/system.save   Out/system.save
+/home/a.geondzhian/ocean_work_dir/C8/xas/DFT/k4_4_4q0.125000_0.250000_0.375000
+Testing parallel QE execution
+srun -n 16 /home/a.geondzhian/bin/ocean-acbn0/pw.x  -npool 16  -inp nscf.in > test.out 2>&1
+Memory estimate 19.85
+Min pool size 0.9
+ N procs     Pool     Band        Cost
+      16       16        1       8.07224
+      16        8        1       8.14564
+      16        4        1       8.29593
+      16        2        1       8.61064
+      15        5        1       8.90522
+../Out/system.save   Out/system.save
+/home/a.geondzhian/ocean_work_dir/C8/xas/DFT/k4_4_4q0.125000_0.250000_0.375000
+16  16
+srun -n 16 /home/a.geondzhian/bin/ocean-acbn0/pw.x  -npool 16 -inp nscf.in > nscf.out 2>&1
+QE62!!
+64
+64
+128
+Tue Oct 14 01:30:13 2025
+Time scf: 17.996751
+Time density: 6.698082
+Time potential: 5.441657
+Time bse: 32.618373
+Time screen: 0.000000
+Time epsilon: 0.000000
+DFT section is complete
+
+################################################################################
+Entering PREP stage
+Detected QE62-style DFT run
+../../OPF/zpawinfo
+srun -n 16 /home/a.geondzhian/bin/ocean-acbn0/ocean_prep.x > ocean_prep.log 2>&1
+ocean_prep exited successfully with value 0
+################################################################################
+Entering SCREENing stage
+density NULL
+model NULL
+screen NULL
+combine NULL
+offset NULL
+1  C_  1
+1
+1  C_  2
+2
+1
+2
+MODEL: 0
+ Plan using FFTW:          32          32          32       32768
+srun -n 16 /home/a.geondzhian/bin/ocean-acbn0/mpi_avg.x > mpi_avg.log 2>&1
+mpi_avg exited successfully with value 0
+/home/a.geondzhian/bin/ocean-acbn0/vhommod.x
+ zC_0001/avg
+ zC_0002/avg
+vhommod exited successfully with value 0
+SCREEN
+Ran out of shells, might be making fewer than expected!
+srun -n 16 /home/a.geondzhian/bin/ocean-acbn0/screen_driver.x > screen_driver.log 2>&1
+screen_driver exited successfully with value 0
+reoptC_0001.R3.50
+zC_0001_n01l00.zR3.50vind
+zC_0001_n01l00.zR3.50vind0
+zC_0001_n01l00.zR3.50nind
+zC_0001_n01l00.zR3.50nind0
+reoptC_0001.R4.00
+zC_0001_n01l00.zR4.00vind
+zC_0001_n01l00.zR4.00vind0
+zC_0001_n01l00.zR4.00nind
+zC_0001_n01l00.zR4.00nind0
+reoptC_0001.R4.50
+zC_0001_n01l00.zR4.50vind
+zC_0001_n01l00.zR4.50vind0
+zC_0001_n01l00.zR4.50nind
+zC_0001_n01l00.zR4.50nind0
+reoptC_0001.R5.00
+zC_0001_n01l00.zR5.00vind
+zC_0001_n01l00.zR5.00vind0
+zC_0001_n01l00.zR5.00nind
+zC_0001_n01l00.zR5.00nind0
+reoptC_0001.R5.50
+zC_0001_n01l00.zR5.50vind
+zC_0001_n01l00.zR5.50vind0
+zC_0001_n01l00.zR5.50nind
+zC_0001_n01l00.zR5.50nind0
+reoptC_0001.R6.00
+zC_0001_n01l00.zR6.00vind
+zC_0001_n01l00.zR6.00vind0
+zC_0001_n01l00.zR6.00nind
+zC_0001_n01l00.zR6.00nind0
+reoptC_0002.R3.50
+zC_0002_n01l00.zR3.50vind
+zC_0002_n01l00.zR3.50vind0
+zC_0002_n01l00.zR3.50nind
+zC_0002_n01l00.zR3.50nind0
+reoptC_0002.R4.00
+zC_0002_n01l00.zR4.00vind
+zC_0002_n01l00.zR4.00vind0
+zC_0002_n01l00.zR4.00nind
+zC_0002_n01l00.zR4.00nind0
+reoptC_0002.R4.50
+zC_0002_n01l00.zR4.50vind
+zC_0002_n01l00.zR4.50vind0
+zC_0002_n01l00.zR4.50nind
+zC_0002_n01l00.zR4.50nind0
+reoptC_0002.R5.00
+zC_0002_n01l00.zR5.00vind
+zC_0002_n01l00.zR5.00vind0
+zC_0002_n01l00.zR5.00nind
+zC_0002_n01l00.zR5.00nind0
+reoptC_0002.R5.50
+zC_0002_n01l00.zR5.50vind
+zC_0002_n01l00.zR5.50vind0
+zC_0002_n01l00.zR5.50nind
+zC_0002_n01l00.zR5.50nind0
+reoptC_0002.R6.00
+zC_0002_n01l00.zR6.00vind
+zC_0002_n01l00.zR6.00vind0
+zC_0002_n01l00.zR6.00nind
+zC_0002_n01l00.zR6.00nind0
+COMBINE
+$VAR1 = 'zC_0001';
+$VAR2 = [
+          [
+            'n01l00',
+            '  6  1  0'
+          ]
+        ];
+$VAR3 = 'zC_0002';
+$VAR4 = [
+          [
+            'n01l00',
+            '  6  1  0'
+          ]
+        ];
+  6  1  0
+0.168847576855364E-08	-0.539259355864783E+01
+0.168847576855364E-08	0.838944677277119E+00
+0.168847576855364E-08	0.699961374889477E+00
+zC_0001
+	n01l00	  6  1  0
+		zR3.50	3.5	0
+zC_0001/n01l00/zR3.50
+screen_driver used augmentation
+  6  1  0
+2000
+		zR4.00	4	1
+zC_0001/n01l00/zR4.00
+screen_driver used augmentation
+  6  1  0
+2000
+		zR4.50	4.5	2
+zC_0001/n01l00/zR4.50
+screen_driver used augmentation
+  6  1  0
+2000
+		zR5.00	5	3
+zC_0001/n01l00/zR5.00
+screen_driver used augmentation
+  6  1  0
+2000
+		zR5.50	5.5	4
+zC_0001/n01l00/zR5.50
+screen_driver used augmentation
+  6  1  0
+2000
+		zR6.00	6	5
+zC_0001/n01l00/zR6.00
+screen_driver used augmentation
+  6  1  0
+2000
+zC_0002
+	n01l00	  6  1  0
+		zR3.50	3.5	0
+zC_0002/n01l00/zR3.50
+screen_driver used augmentation
+  6  1  0
+2000
+		zR4.00	4	1
+zC_0002/n01l00/zR4.00
+screen_driver used augmentation
+  6  1  0
+2000
+		zR4.50	4.5	2
+zC_0002/n01l00/zR4.50
+screen_driver used augmentation
+  6  1  0
+2000
+		zR5.00	5	3
+zC_0002/n01l00/zR5.00
+screen_driver used augmentation
+  6  1  0
+2000
+		zR5.50	5.5	4
+zC_0002/n01l00/zR5.50
+screen_driver used augmentation
+  6  1  0
+2000
+		zR6.00	6	5
+zC_0002/n01l00/zR6.00
+screen_driver used augmentation
+  6  1  0
+2000
+OFFSET
+ Plan using FFTW:          32          32          32       32768
+srun -n 16 /home/a.geondzhian/bin/ocean-acbn0/mpi_avg.x > mpi_avg.log 2>&1
+mpi_avg exited successfully with value 0
+C_ 6 1 1 0	HFIN
+C_ 6 2 1 0	HFIN
+0.999873899717841
+0.999873899717841
+0.999873899717841
+0.999873899717841
+zC_0001/n01l00/cls_rad.txt
+zC_0002/n01l00/cls_rad.txt
+Time density: 1.461345
+Time model: 3.660254
+Time screen: 535.956205
+Time combine: 0.267555
+Time offset: 2.854848
+################################################################################
+Entering CNBSE stage
+Looking for available photon files:
+    Running with 2 photon files
+C_  6  1  
+C_  6  2  
+         169  points with weights summing to four pi 
+lmax =     5     caps =   0.15543122E-14  0.11470859E-14
+      1.000000000000000      1.000000000000002     -0.000000000000001      0.000000000000001
+max conv diff =  0.88817842E-14
+   -1   -1       0.0000     0.0000          0.0000     0.0000         -0.5000     0.0000
+   -1    1       0.5000     0.0000         -0.0000     0.5000          0.0000     0.0000
+    1   -1       0.5000     0.0000          0.0000    -0.5000          0.0000     0.0000
+    1    1       0.0000     0.0000          0.0000     0.0000          0.5000     0.0000
+ word = cartesian                                                                       
+ word = end                                                                             
+   0.00000   0.00000   1.00000      0.10000000E+01
+ word = cartesian                                                                       
+ word = end                                                                             
+   0.00000   0.00000   1.00000      0.10000000E+01
+   0.00000   0.00000   1.00000
+   0.00000   0.00000   1.00000
+q =    0.07621
+ ck1
+ ck2
+  qmag =    7.6214673031004682E-002 inverse bohrs
+         169  points with weights summing to four pi 
+lmax =     5     caps =   0.15543122E-14  0.11470859E-14
+      1.000000000000000      1.000000000000002     -0.000000000000001      0.000000000000001
+max conv diff =  0.88817842E-14
+   -1   -1       0.0000     0.0000          0.0000     0.0000         -0.5000     0.0000
+   -1    1       0.5000     0.0000         -0.0000     0.5000          0.0000     0.0000
+    1   -1       0.5000     0.0000          0.0000    -0.5000          0.0000     0.0000
+    1    1       0.0000     0.0000          0.0000     0.0000          0.5000     0.0000
+ word = cartesian                                                                       
+ word = end                                                                             
+   0.00000   1.00000   0.00000      0.10000000E+01
+ word = cartesian                                                                       
+ word = end                                                                             
+   0.00000   0.00000   1.00000      0.10000000E+01
+   0.00000   1.00000   0.00000
+   0.00000   0.00000   1.00000
+q =    0.07621
+ ck1
+ ck2
+  qmag =    7.6214673031004682E-002 inverse bohrs
+1s	corezetaz006
+SCFAC: 6
+zC_0001/n01l00   zC_0001_n01l00
+../SCREEN/zC_0001/n01l00/zR5.50/rpot  rpot.zC_0001_n01l00
+zC_0002/n01l00   zC_0002_n01l00
+../SCREEN/zC_0002/n01l00/zR5.50/rpot  rpot.zC_0002_n01l00
+srun -n 16 /home/a.geondzhian/bin/ocean-acbn0/ocean.x > ocean.log 2>&1
+ocean exited successfully with value 0
+################################################################################
+Ocean is done
+################################################################################

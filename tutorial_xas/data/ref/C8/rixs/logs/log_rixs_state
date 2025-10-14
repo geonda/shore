@@ -1,0 +1,115 @@
+{
+    "root": "/Users/geonda/root/shore-1",
+    "fresh": true,
+    "name": "rixs",
+    "element": "C",
+    "rpath": "C8/rixs",
+    "edge": "K",
+    "local_dir": "/Users/geonda/root/shore-1/C8/rixs",
+    "log_dir": "/Users/geonda/root/shore-1/C8/rixs/logs",
+    "res_dir": "/Users/geonda/root/shore-1/C8/rixs/results/",
+    "path_to_jar": "/Users/geonda/root/shore-1/jar",
+    "filename": "/Users/geonda/root/shore-1/C8/rixs/logs/log_rixs_state",
+    "input_data": {
+        "dft.program": "qe",
+        "dft.den.kmesh": -4,
+        "dft.ecut": -1,
+        "diemac": 4.7,
+        "dft.occopt": 6,
+        "screen.nbands": 80,
+        "screen.kmesh": -2,
+        "screen.shells": "3.5 4.0 4.5 5.0 5.5 6.0",
+        "screen.core_offset.enable": "true",
+        "screen.final.dr": "0.02",
+        "screen.grid.rmax": "10",
+        "screen.grid.rmode": "lagrange uniform",
+        "screen.grid.ang": "5 11 11 9 7",
+        "screen.grid.deltar": "0.10 0.15 0.25 0.25 0.25",
+        "screen.grid.shells": " -1 4 6 8 10",
+        "screen.lmax": "2",
+        "dft.diagonalization": "david",
+        "dft.screen.diagonalization": "ppcg",
+        "dft.bse.diagonalization": "ppcg",
+        "nspin": 1,
+        "nstep": 100,
+        "mixing": 0.5,
+        "bse.kmesh": -4,
+        "bse.nbands": 30,
+        "bse.core.broaden": 0.4,
+        "bse.core.haydock.converge.thresh": "0.001 5",
+        "bse.core.screen_radius": " 5.5",
+        "bse.core.haydock.niter": "1000",
+        "cnbse.spect_range": "1000 -10 40",
+        "psp.pp_database": "ONCVPSP-PBE-PDv0.4-stringent",
+        "psp.ecut_quality": "high",
+        "opf.program": "hamann",
+        "computer.para_prefix": "srun -n 16",
+        "nbands": 24,
+        "smag": "starting_magnetization(1)=0, ",
+        "calc": "rxs",
+        "cnbse.solver": "gmres",
+        "bse.core.gmres.estyle": "range",
+        "calc.photon_in": 1,
+        "calc.photon_out": 2,
+        "bse.val.broaden": 0.4,
+        "cnbse.gmres.erange": "10 30 2",
+        "edges": "-6 1 0",
+        "znucl": "6",
+        "typat": "1 1",
+        "xred": "0.5000000000 0.5000000000 0.5000000000\n0.7500000000 0.7500000000 0.7500000000\n",
+        "acell": "1.8897261258369282 1.8897261258369282 1.8897261258369282",
+        "rprim": " 0.00000000000000 1.78037255500000 1.78037255500000\n 1.78037255500000 0.00000000000000 1.78037255500000\n 1.78037255500000 1.78037255500000 0.00000000000000 "
+    },
+    "list_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+    ],
+    "remote_dir": "/home/a.geondzhian//ocean_work_dir/C8/rixs",
+    "stages": {
+        "parsing": [
+            "Storing parsed data",
+            "Finished running extractPsp",
+            "Done with parsing"
+        ],
+        "atomic": [
+            "Entering OPF stage",
+            "Entering DFT stage"
+        ],
+        "dft": [
+            "Entering DFT stage",
+            "DFT for BSE final states complete",
+            "DFT section is complete"
+        ],
+        "prep": [
+            "Entering PREP stage",
+            "Entering SCREENing stage"
+        ],
+        "screen": [
+            "Entering SCREENing stage",
+            "Time offset:"
+        ],
+        "bse": [
+            "CNBSE stage",
+            "Ocean is done"
+        ]
+    },
+    "stages_states": {
+        "parsing": 1,
+        "opf": 0,
+        "dft": 0,
+        "prep": 1,
+        "screen": 1,
+        "cnbse": 0,
+        "atomic": 1,
+        "bse": 1
+    },
+    "file_path": "/Users/geonda/root/shore-1/C8/rixs/logs/log",
+    "err": "Loading q-ch/qe/7.3.1/gcc/11.2/mpich/mkl\n  Loading requirement: devtools/math/mkl/2024.1.0.695\n    devtools/mpi/mpich/4.2.1/gcc/11.2\nNote: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG IEEE_DIVIDE_BY_ZERO\n",
+    "out": ""
+}

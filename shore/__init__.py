@@ -52,6 +52,7 @@ def plotly_formatting(fig):
         yaxis=dict(showline=True, linewidth=2, linecolor='grey', mirror=True),)  # Border for y-axis)
     fig.update_layout(width=900,height=600)
     fig.update_xaxes(range=[-10, 10])
+    return fig
 
 
 def load(file):
@@ -436,7 +437,7 @@ class _xas():
         self.stages=dict(
                         parsing=['Storing parsed data','Finished running extractPsp','Done with parsing'],
                         opf=['Entering OPF stage','Entering DFT stage'],
-                        dft=['Entering DFT stage','DFT for BSE final states complete','DFT section is complete'],
+                        dft=['Entering DFT stage','DFT section is complete'],
                         prep=['Entering PREP stage','Entering SCREENing stage'], 
                         screen=['Entering SCREENing stage','Time offset:'],
                         cnbse=['CNBSE stage','Ocean is done']

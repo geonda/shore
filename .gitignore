@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+.vscode
 *.py[cod]
 *$py.class
 build
@@ -8,7 +9,7 @@ shore.egg*
 example.ipynb
 # C extensions
 *.so
-
+test.server.pkl
 # Distribution / packaging
 .Python
 build/

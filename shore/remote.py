@@ -7,7 +7,11 @@ import pickle
 from pathlib import Path
 
 class RemoteServerManager:
-    def __init__(self, remote_host=None, username=None,key=None, password=None, load=None, command='/opt/cms/q-ch/ocean/ocean.pl ocean.in > log'):
+    def __init__(self, remote_host=None, username=None,key=None, password=None, load=None, 
+    command='/home/a.geondzhian/bin/ocean-acbn0/ocean.pl ocean.in > log',
+    module='source /etc/profile.d/modules.sh; module load q-ch/qe/7.3.1/gcc/11.2/mpich/mkl', 
+    extra='export OMP_NUM_THREADS=1'):
+
         if not load:
             self.remote_host = remote_host
             self.username = username
@@ -21,6 +25,8 @@ class RemoteServerManager:
             self.sbatch=True
             self.monitor_active=False
             self.command=command
+            self.module=module
+            self.extra=extra
         else:
             self.load(load)
 
@@ -39,8 +45,9 @@ class RemoteServerManager:
         self.remote_dir=None
 
     def save(self, path):
-        with open(f'{path}', 'wb') as f:
-            pickle.dump(self.__dict__,f)
+        import dill
+        with open(path, 'wb') as f:
+            dill.dump(self.__dict__, f)
     
     def load(self,path):
         with open(f'{path}', 'rb') as f:
@@ -162,13 +169,15 @@ class RemoteServerManager:
             # Filter files that start with 'absspct'
             absspct_files = [f for f in remote_files if f.startswith("absspct")]
             
+            rxsspct_files = [f for f in remote_files if f.startswith("rxsspct")]
+            files=absspct_files+rxsspct_files
             # List files in the remote directory
         except: 
             print('No spectra found')
             return None
         finally:
             sftp.close()
-            return absspct_files
+            return files
     
     def download_spectra(self, remote_directory, local_directory):
         """
@@ -190,9 +199,17 @@ class RemoteServerManager:
 
             # Filter files that start with 'absspct'
             absspct_files = [f for f in remote_files if f.startswith("absspct")]
-            print(absspct_files)
+            rxsspct_files = [f for f in remote_files if f.startswith("rxsspct")]
+            # print(absspct_files)
             # List files in the remote directory
             for item in absspct_files:
+                remote_path = os.path.join(remote_directory, item)
+                local_path = os.path.join(local_directory, item)
+                
+                # Check if the remote path is a directory
+               
+                sftp.get(remote_path, local_path)
+            for item in rxsspct_files:
                 remote_path = os.path.join(remote_directory, item)
                 local_path = os.path.join(local_directory, item)
                 
