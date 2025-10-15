@@ -5,6 +5,7 @@ import logging
 import os
 import pickle
 from pathlib import Path
+import shutil
 
 class RemoteServerManager:
     def __init__(self, remote_host=None, username=None,key=None, password=None, load=None, 
@@ -416,3 +417,207 @@ class RemoteServerManager:
             info_str += f"  - {method}\n"
         
         print(info_str)
+
+
+
+class ClusterLocalManager(RemoteServerManager):
+    def __init__(self, username=None,
+                        load=None, 
+                        calculation_folder='',
+                        cores=8,
+                        command='/home/a.geondzhian/bin/ocean-acbn0/ocean.pl ocean.in > log',
+                        module='source /etc/profile.d/modules.sh; module load q-ch/qe/7.3.1/gcc/11.2/mpich/mkl', 
+                        extra='export OMP_NUM_THREADS=1', **kwargs):
+        
+        # Initialize with local paths, no SSH params needed
+        self.root = calculation_folder
+        self.cores = cores
+        self.sbatch = True
+        self.monitor_active = False
+        # self.command = kwargs.get('command', 'ocean.pl ocean.in > log')
+        # self.module = kwargs.get('module', None)
+        # self.extra = kwargs.get('extra', None)
+        self.command=command
+        self.module=module
+        self.extra=extra
+        self.server_dir = './server_logs/'
+        os.makedirs(self.server_dir, exist_ok=True)
+        logging.basicConfig(
+            filename=f'{self.server_dir}/cluster_local_manager.log',
+            level=logging.INFO,
+            format='%(asctime)s - %(levelname)s - %(message)s'
+        )
+        # No ssh_client or sftp_client needed
+        # self.ssh_client = None
+        self.sftp_client = LocalSFTPClient()
+
+        self.ssh_client=LocalCommandClient()
+
+    def connect(self):
+        # os.chdir(self.root)
+        # No SSH, so just log local mode
+        logging.info(f"Running on cluster local filesystem at {self.root}")
+
+    def disconnect(self):
+        os.chdir(self.root)
+        logging.info("Local mode - no connection to disconnect")
+
+    def create_remote_directory_if_not_exists(self, remote_path):
+        full_path = os.path.join(self.root, remote_path)
+        try:
+            if not os.path.exists(full_path):
+                os.makedirs(full_path)
+                logging.info(f"Created directory: {full_path}")
+            else:
+                logging.info(f"Directory already exists: {full_path}")
+        except Exception as e:
+            logging.error(f"Failed to create directory {full_path}: {e}")
+
+    def delete_directory(self, remote_dir):
+        full_path = os.path.join(self.root, remote_dir)
+        try:
+            if os.path.exists(full_path):
+                shutil.rmtree(full_path)
+                logging.info(f"Deleted directory: {full_path}")
+            else:
+                logging.info(f"Directory to delete does not exist: {full_path}")
+        except Exception as e:
+            logging.error(f"Error deleting directory {full_path}: {e}")
+
+    def upload_file(self, local_file_path, remote_directory):
+        # For local cluster, copy file within filesystem
+        dest_dir = os.path.join(self.root, remote_directory)
+        os.makedirs(dest_dir, exist_ok=True)
+        dest_file = os.path.join(dest_dir, os.path.basename(local_file_path))
+        try:
+            shutil.copy(local_file_path, dest_file)
+            logging.info(f"Copied {local_file_path} to {dest_file}")
+        except Exception as e:
+            logging.error(f"Error copying file {local_file_path} to {dest_file}: {e}")
+
+    def download_file(self, filename, local_directory, remote_directory):
+        # Reverse of upload, copy file from remote_directory to local_directory locally
+        source_file = os.path.join(self.root, remote_directory, filename)
+        os.makedirs(local_directory, exist_ok=True)
+        dest_file = os.path.join(local_directory, filename)
+        try:
+            shutil.copy(source_file, dest_file)
+            logging.info(f"Copied {source_file} to {dest_file}")
+        except Exception as e:
+            logging.error(f"Error copying file {source_file} to {dest_file}: {e}")
+
+    def list_files(self, remote_directory):
+        full_path = os.path.join(self.root, remote_directory)
+        try:
+            all_files = os.listdir(full_path)
+            absspct_files = [f for f in all_files if f.startswith("absspct")]
+            rxsspct_files = [f for f in all_files if f.startswith("rxsspct")]
+            return absspct_files + rxsspct_files
+        except FileNotFoundError:
+            logging.error(f"Directory not found: {full_path}")
+            return []
+
+    def execute_command(self, command):
+        import subprocess
+        try:
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            if result.returncode == 0:
+                logging.info(f"Executed command: {command}")
+                return result.stdout.strip()
+            else:
+                logging.error(f"Error executing command: {result.stderr.strip()}")
+                return None, result.stderr.strip()
+        except Exception as e:
+            logging.error(f"Exception executing command: {e}")
+            return None
+
+    def get_file_modification_time(self, filename, remote_directory):
+        filepath = os.path.join(self.root, remote_directory, filename)
+        try:
+            return os.path.getmtime(filepath)
+        except FileNotFoundError:
+            return None
+
+    def check_folder_exists_and_not_empty(self, folder_path):
+        """Check if a folder exists and is not empty on the remote server."""
+        try:
+            # Check if folder exists by listing its contents
+            file_list = self.sftp_client.listdir(folder_path)
+            
+            if file_list:
+                logging.info(f"The folder '{folder_path}' exists and is not empty.")
+                return True  # Folder exists and is not empty
+            else:
+                logging.info(f"The folder '{folder_path}' exists but is empty.")
+                return False  # Folder exists but is empty
+        
+        except FileNotFoundError:
+            logging.error(f"The folder '{folder_path}' does not exist.")
+            return False  # Folder does not exist
+        
+import subprocess
+import logging
+from io import StringIO
+
+class LocalCommandClient:
+    def exec_command(self, command):
+        """
+        Executes a command locally (replacing SSH exec_command).
+        Returns a tuple of (stdin, stdout, stderr)-like file-like objects.
+        """
+        try:
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            
+            # Simulate stdin as None because it's not used here
+            stdin = None
+            
+            # Wrap stdout and stderr strings in StringIO to mimic file-like interface
+            
+            return stdin, result.stdout, result.stderr
+        except Exception as e:
+            logging.error(f"Exception executing local command: {e}")
+            # On error, simulate empty streams
+            return None, StringIO(''), StringIO(str(e))
+import os
+import shutil
+import logging
+
+class LocalSFTPClient:
+    def listdir(self, path):
+        """List directory contents like sftp.listdir()"""
+        try:
+            contents = os.listdir(path)
+            return contents
+        except Exception as e:
+            logging.error(f"Failed to list directory {path}: {e}")
+            raise
+
+    def get(self, remote_path, local_path):
+        """Copy file from remote_path to local_path (download)"""
+        try:
+            shutil.copy2(remote_path, local_path)
+            logging.info(f"Copied {remote_path} to {local_path}")
+        except Exception as e:
+            logging.error(f"Failed to copy {remote_path} to {local_path}: {e}")
+            raise
+
+    def put(self, local_path, remote_path):
+        """Copy file from local_path to remote_path (upload)"""
+        try:
+            shutil.copy2(local_path, remote_path)
+            logging.info(f"Copied {local_path} to {remote_path}")
+        except Exception as e:
+            logging.error(f"Failed to copy {local_path} to {remote_path}: {e}")
+            raise
+
+    def stat(self, path):
+        """Return os.stat_result like sftp.stat()"""
+        try:
+            return os.stat(path)
+        except Exception as e:
+            logging.error(f"Failed to stat {path}: {e}")
+            raise
+
+    def close(self):
+        """No-op for local client, placeholder for interface compatibility"""
+        logging.info("LocalSFTPClient closed (no operation).")

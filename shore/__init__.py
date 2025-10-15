@@ -17,6 +17,7 @@ from ase.visualize import view as avw
 from ase.build import make_supercell  # Assuming you may need this function later
 from ase.units import Bohr
 from shore.remote import RemoteServerManager
+from shore.remote import ClusterLocalManager
 import pickle
 import spglib
 

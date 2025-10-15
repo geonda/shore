@@ -93,6 +93,7 @@ class Calculation():
         self.input.light.write_to_folder(file_path=f'{self.local_dir}')
         
         if self.server:
+            # print(self.server.root,self.rpath)
             self.remote_dir=f'{self.server.root}/{self.rpath}'
             self.server.connect()
             self.server.remote_dir_init(f"{self.rpath}")
@@ -344,7 +345,6 @@ class Calculation():
                 #     self.workflow.add_instance(node1=f'{self.element}-{self.edge} edge',
                 #                             node2=f'XAS {self.element} {atom_sites}', layer='xas results',)
             else:                          
-                os.system('rm -r ./*')
                 os.system(f'cp {self.root}/ocean.sh {self.local_dir}/')
                 # print(f"Changed directory to: {self.path}")
                 #
@@ -359,19 +359,27 @@ class Calculation():
             print(f"Error: The directory {self.local_dir} does not exist.")
         
     def _run_remote(self, overwrite=False, monitor=True):
-        
+
         try:
             self.handle_input()
+            
             self.server.connect()
+            
             if self.server.check_folder_exists_and_not_empty(f'{self.remote_dir}/CNBSE/') and overwrite==False:
                 print('Heavy part is already done. if you want to rerun it use overwrite=true')
             else:  
-                if self.server.sbatch:                      
+                
+                if self.server.sbatch:                    
                     command=f'cd {self.remote_dir}; pwd; sbatch job.sh'
+
                     stdin, stdout, stderr=self.server.ssh_client.exec_command(command)
                     # transport.close()
-                    output = stdout.read().decode('utf-8')
-                    error_output = stderr.read().decode('utf-8')
+                    try:
+                        output = stdout.read().decode('utf-8')
+                        error_output = stderr.read().decode('utf-8')
+                    except:
+                        output = stdout
+                        error_output = stderr
                     if error_output:
                         print(f"Error submitting job: {error_output}")
                     match = re.search(r'Submitted batch job (\d+)', output)
@@ -381,26 +389,25 @@ class Calculation():
                         self.job_id=job_id
                     else:
                         print("Could not retrieve Job ID from sbatch output.")
-                else:
+                # else:
 
-                    # command=f'source ~/miniforge3/bin/activate new ; cd {self.remote_dir}; /home/a.geondzhian/bin/ocean-acbn0/ocean.pl ocean.in > log &'
-                    command=f'source /etc/profile.d/modules.sh ; module load q-ch/qe/7.3.1/gcc/11.2/mpich/mkl; cd {self.remote_dir}; /home/a.geondzhian/bin/ocean-acbn0/ocean.pl ocean.in > log &'
-                    # command=f'cd {self.remote_dir}; pwd; /home/a.geondzhian/bin/ocean-acbn0/ocean.pl ocean.in > log'
-                    transport=self.server.ssh_client.get_transport()
-                    channel=transport.open_session()
-                    try:
-                        # Execute the command
-                        channel.exec_command(command)
-                    finally:
-                        # Close the channel to free resources
-                        channel.close()
+                #     # command=f'source ~/miniforge3/bin/activate new ; cd {self.remote_dir}; /home/a.geondzhian/bin/ocean-acbn0/ocean.pl ocean.in > log &'
+                #     command=f'source /etc/profile.d/modules.sh ; module load q-ch/qe/7.3.1/gcc/11.2/mpich/mkl; cd {self.remote_dir}; /home/a.geondzhian/bin/ocean-acbn0/ocean.pl ocean.in > log &'
+                #     # command=f'cd {self.remote_dir}; pwd; /home/a.geondzhian/bin/ocean-acbn0/ocean.pl ocean.in > log'
+                #     transport=self.server.ssh_client.get_transport()
+                #     channel=transport.open_session()
+                #     try:
+                #         # Execute the command
+                #         channel.exec_command(command)
+                #     finally:
+                #         # Close the channel to free resources
+                #         channel.close()
                     
-                
                 if monitor:
                     self._remote_monitor()
 
         except Exception as e:
-            print(f"{e}")
+            print(f" {e}")
 
     def __read_error_file(self,file_path):
         """
