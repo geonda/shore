@@ -179,7 +179,7 @@ class ResultsHandler:
                 loaded_instance = pickle.load(f)
                 return loaded_instance
 
-    def plot_rixs(self, fig=None, element=None, core_level=None, photon_in=None, photon_out=None, energy_point=None, name=None, norm=True, lw=2, lc=None):
+    def plot_rixs(self, fig=None, element=None, core_level=None, photon_in=None, photon_out=None, energy_point=None, name=None, norm=False, lw=2, lc=None):
         """Plot RIXS vs energy loss using Plotly."""
         if not fig:
             fig = go.Figure()
@@ -337,7 +337,7 @@ class ResultsHandler:
         ))
         return fig
 
-    def plot_xas(self, fig=None, element=None, core_level=None, site_number=None, polarization=None, name=None, norm=True, lw=2, lc=None):
+    def plot_xas(self, fig=None, element=None, core_level=None, site_number=None, polarization=None, name=None, norm=True, lw=2, lc=None, rshift=0 ):
         """Plot XAS absorption vs energy using Plotly."""
         if not fig:
             fig = go.Figure()
@@ -389,7 +389,7 @@ class ResultsHandler:
                 if lc:
                     # Add trace for each polarization
                     fig.add_trace(go.Scatter(
-                        x=energy,
+                        x=energy+rshift,
                         y=spectrum,
                         mode='lines',
                         name=name,
@@ -397,7 +397,7 @@ class ResultsHandler:
                     ))
                 else:
                     fig.add_trace(go.Scatter(
-                        x=energy,
+                        x=energy+rshift,
                         y=spectrum,
                         mode='lines',
                         name=name,
@@ -417,7 +417,7 @@ class ResultsHandler:
         )
         from shore import plotly_formatting
         fig=plotly_formatting(fig)
-        fig.update_xaxes(range=[min(energy),max(energy)])
+        fig.update_xaxes(range=[min(energy)+rshift,max(energy)+rshift])
         return fig
 
                 # Show the figure
